@@ -206,8 +206,12 @@ export default function DashboardPage() {
       {/* ── NAV ── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b ${tk.border} ${tk.navBg} transition-colors duration-200`}>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-[#50AF95] flex items-center justify-center shrink-0">
-            <span className="text-[#0a0a0a] font-black text-sm">C</span>
+          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+            <img 
+              src="/CoinFessionLogo.svg" 
+              alt="CoinFession Logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <span className={`font-bold text-sm tracking-tight ${tk.text}`}>CoinFession</span>
@@ -589,8 +593,12 @@ export default function DashboardPage() {
           {/* Brand + socials */}
           <div className="max-w-xs">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-md bg-[#50AF95] flex items-center justify-center shrink-0">
-                <span className="text-[#0a0a0a] font-black text-sm">C</span>
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <img 
+                  src="/CoinFessionLogo.svg" 
+                  alt="CoinFession Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className={`font-bold text-sm ${tk.text}`}>CoinFession</span>
             </div>
