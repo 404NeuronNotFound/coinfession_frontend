@@ -206,7 +206,9 @@ export default function DashboardPage() {
       {/* ── NAV ── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b ${tk.border} ${tk.navBg} transition-colors duration-200`}>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+          <div 
+          onClick={() => window.location.href = "/"}
+          className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer">
             <img 
               src="/CoinFessionLogo.svg" 
               alt="CoinFession Logo"
@@ -224,7 +226,7 @@ export default function DashboardPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-md text-sm transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm transition-colors cursor-pointer ${
                 activeTab === tab.id ? tk.tabActive : tk.tabInactive
               }`}
             >
@@ -237,7 +239,7 @@ export default function DashboardPage() {
           {/* Theme toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className={themeBtn}
+            className={`cursor-pointer ${themeBtn}`} 
             aria-label="Toggle theme"
           >
             {theme === "dark" ? <SunIcon /> : <MoonIcon />}
@@ -593,14 +595,16 @@ export default function DashboardPage() {
           {/* Brand + socials */}
           <div className="max-w-xs">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                <img 
-                  src="/CoinFessionLogo.svg" 
-                  alt="CoinFession Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <span className={`font-bold text-sm ${tk.text}`}>CoinFession</span>
+                <div 
+                onClick={() => window.location.href = "/"}
+                className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer">
+                  <img 
+                    src="/CoinFessionLogo.svg" 
+                    alt="CoinFession Logo"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className={`font-bold text-sm ${tk.text}`}>CoinFession</span>
             </div>
             <p className={`text-xs leading-relaxed mb-6 ${tk.footerDesc}`}>
               A trade journal for crypto investors who want to stop repeating mistakes
