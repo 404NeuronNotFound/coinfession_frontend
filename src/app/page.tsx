@@ -1,7 +1,7 @@
 
-import DashboardPage from "@/pages/DashboardPage";
+import LandingPage from "@/pages/LandingPage";
 
 
 export default function Home() {
-  return <DashboardPage />
+  return <LandingPage />
 }
