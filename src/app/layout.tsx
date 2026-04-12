@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CoinFession",
   description: "Developed by Keybeen",
+  icons: {
+    icon: "/CoinFessionLogo.svg",
+  },
 };
 
 export default function RootLayout({
