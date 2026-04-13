@@ -1,7 +1,7 @@
 "use client";
 
 import { Tokens, Theme } from "@/lib/theme";
-import { SunIcon, MoonIcon } from "@/components/Icons";
+import { SunIcon, MoonIcon } from "@/components/ui/Icons";
 
 interface NavbarProps {
   tk: Tokens;

@@ -1,5 +1,5 @@
 import { Tokens, Theme } from "@/lib/theme";
-import { InstagramIcon, TikTokIcon, GitHubIcon } from "@/components/Icons";
+import { InstagramIcon, TikTokIcon, GitHubIcon } from "@/components/ui/Icons";
 
 interface FooterProps {
   tk: Tokens;
