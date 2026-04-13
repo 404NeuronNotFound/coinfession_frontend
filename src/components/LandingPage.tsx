@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Theme, getTokens, Tokens } from "@/lib/theme";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
 
 // ─── All sections are combined here because they are
 //     landing-page-specific and won't be reused elsewhere.
