@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Theme, getTokens } from "@/lib/theme";
 import { SunIcon, MoonIcon } from "@/components/ui/Icons";
 import InputField from "@/components/ui/InputField";
 import PasswordInput from "@/components/ui/PasswordInput";
 
-// ─── Types ────────────────────────────────────────────────
-interface FormData {
-  username:         string;
-  first_name:       string;
-  last_name:        string;
-  email:            string;
-  password:         string;
-  confirm_password: string;
-}
+// ─── Types, API, Store ────────────────────────────────────
+import { RegisterPayload, ApiError } from "@/types/auth";
+import { register } from "@/api/auth";
+import { useAuthStore } from "@/stores/authStore";
+
+// ─── Local form state types ───────────────────────────────
+// These are UI-only — separate from RegisterPayload on purpose.
+// RegisterPayload goes to the API; FormFields drives the inputs.
+type FormFields = RegisterPayload; // same shape here, but kept distinct
 
 interface FormErrors {
   username?:         string;
@@ -26,7 +27,7 @@ interface FormErrors {
   form?:             string;
 }
 
-const EMPTY: FormData = {
+const EMPTY: FormFields = {
   username:         "",
   first_name:       "",
   last_name:        "",
@@ -35,51 +36,49 @@ const EMPTY: FormData = {
   confirm_password: "",
 };
 
-// ─── Validation ───────────────────────────────────────────
-function validate(data: FormData): FormErrors {
-  const errors: FormErrors = {};
+// ─── Client-side validation ───────────────────────────────
+// Runs before hitting the API — gives instant feedback.
+// Server errors (e.g. duplicate username) are handled separately.
+function validate(data: FormFields): FormErrors {
+  const e: FormErrors = {};
 
   if (!data.username.trim())
-    errors.username = "Username is required.";
+    e.username = "Username is required.";
   else if (data.username.length < 3)
-    errors.username = "At least 3 characters.";
+    e.username = "At least 3 characters.";
   else if (!/^[a-zA-Z0-9_]+$/.test(data.username))
-    errors.username = "Letters, numbers, and underscores only.";
+    e.username = "Letters, numbers, and underscores only.";
 
   if (!data.first_name.trim())
-    errors.first_name = "First name is required.";
+    e.first_name = "First name is required.";
 
   if (!data.last_name.trim())
-    errors.last_name = "Last name is required.";
+    e.last_name = "Last name is required.";
 
   if (!data.email.trim())
-    errors.email = "Email is required.";
+    e.email = "Email is required.";
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-    errors.email = "Enter a valid email address.";
+    e.email = "Enter a valid email address.";
 
   if (!data.password)
-    errors.password = "Password is required.";
+    e.password = "Password is required.";
   else if (data.password.length < 8)
-    errors.password = "At least 8 characters.";
+    e.password = "At least 8 characters.";
 
   if (!data.confirm_password)
-    errors.confirm_password = "Please confirm your password.";
+    e.confirm_password = "Please confirm your password.";
   else if (data.password !== data.confirm_password)
-    errors.confirm_password = "Passwords do not match.";
+    e.confirm_password = "Passwords do not match.";
 
-  return errors;
+  return e;
 }
 
 // ─── Page ─────────────────────────────────────────────────
 export default function RegisterPage() {
-  const [theme, setTheme]           = useState<Theme>("dark");
-  const [form, setForm]             = useState<FormData>(EMPTY);
-  const [errors, setErrors]         = useState<FormErrors>({});
-  const [touched, setTouched]       = useState<Partial<Record<keyof FormData, boolean>>>({});
-  const [agreed, setAgreed]         = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted]   = useState(false);
+  const router = useRouter();
 
+  // ── Theme
+  const [theme, setTheme] = useState<Theme>("dark");
   const tk = getTokens(theme);
   const d  = theme === "dark";
 
@@ -87,56 +86,109 @@ export default function RegisterPage() {
     document.documentElement.classList.toggle("dark", d);
   }, [d]);
 
-  // Re-validate touched fields on every keystroke
+  // ── Form state
+  const [form, setForm]       = useState<FormFields>(EMPTY);
+  const [errors, setErrors]   = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormFields, boolean>>>({});
+  const [agreed, setAgreed]   = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted]   = useState(false);
+
+  // ── Auth store — we store the new user after successful register
+  const setUser = useAuthStore((s) => s.setUser);
+
+  // ── Re-validate touched fields on every keystroke
   useEffect(() => {
     if (Object.keys(touched).length === 0) return;
     const all  = validate(form);
     const next: FormErrors = {};
-    (Object.keys(touched) as (keyof FormData)[]).forEach((k) => {
+    (Object.keys(touched) as (keyof FormFields)[]).forEach((k) => {
       if (touched[k] && all[k]) next[k] = all[k];
     });
-    setErrors(next);
+    setErrors((prev) => ({ ...prev, ...next }));
   }, [form, touched]);
 
-  const handleChange = (field: keyof FormData, value: string) =>
+  const handleChange = (field: keyof FormFields, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
-  const handleBlur = (field: keyof FormData) =>
+  const handleBlur = (field: keyof FormFields) =>
     setTouched((t) => ({ ...t, [field]: true }));
 
+  // ── Submit
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+
+    // Touch every field to surface all errors at once
     const allTouched = Object.fromEntries(
       Object.keys(EMPTY).map((k) => [k, true])
-    ) as Record<keyof FormData, boolean>;
+    ) as Record<keyof FormFields, boolean>;
     setTouched(allTouched);
 
-    const errs = validate(form);
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    if (!agreed) { setErrors({ form: "Please agree to the Terms and Privacy Policy." }); return; }
+    // 1. Client-side validation
+    const clientErrors = validate(form);
+    if (Object.keys(clientErrors).length > 0) {
+      setErrors(clientErrors);
+      return;
+    }
+
+    // 2. Terms agreement check
+    if (!agreed) {
+      setErrors({ form: "Please agree to the Terms of Service and Privacy Policy." });
+      return;
+    }
 
     setSubmitting(true);
     setErrors({});
+
     try {
-      // Replace with: await fetch("/api/auth/register/", { method: "POST", ... })
-      await new Promise((r) => setTimeout(r, 1200));
+      // 3. Call POST /api/user/register/
+      const newUser = await register(form);
+
+      // 4. Store the new user in Zustand (no token yet — not logged in)
+      setUser({
+        id:         newUser.id,
+        username:   newUser.username,
+        first_name: newUser.first_name,
+        last_name:  newUser.last_name,
+        email:      newUser.email,
+      });
+
+      // 5. Show success state
       setSubmitted(true);
-    } catch {
-      setErrors({ form: "Something went wrong. Please try again." });
+
+      // Optional: auto-redirect to login after 2s
+      // setTimeout(() => router.push("/login"), 2000);
+
+    } catch (err: unknown) {
+      // 6. Map DRF field errors back to form fields
+      const apiErr = err as ApiError;
+
+      if (apiErr.fieldErrors) {
+        const mapped: FormErrors = {};
+        for (const [field, messages] of Object.entries(apiErr.fieldErrors)) {
+          const key = field as keyof FormErrors;
+          // Take only the first message per field to keep it clean
+          mapped[key] = messages[0];
+        }
+        setErrors(mapped);
+      } else {
+        setErrors({
+          form: apiErr.message ?? "Something went wrong. Please try again.",
+        });
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ── Shared panel styles ───────────────────────────────────
-  const pageWrap   = `min-h-screen flex items-center justify-center px-4 py-10 transition-colors duration-200 ${tk.bg}`;
-  const outerCard  = `w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border ${tk.border}`;
+  // ── Shared styles
+  const pageWrap  = `min-h-screen flex items-center justify-center px-4 py-10 transition-colors duration-200 ${tk.bg}`;
+  const outerCard = `w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border ${tk.border}`;
 
-  // ── Success ───────────────────────────────────────────────
+  // ── Success screen
   if (submitted) {
     return (
       <main className={pageWrap}>
-        {/* theme toggle — floating top right */}
         <button
           onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
           className={`fixed top-5 right-6 p-2 rounded-md border ${tk.border} ${tk.textMid} ${tk.socialHover} transition-colors`}
@@ -153,16 +205,19 @@ export default function RegisterPage() {
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <h2 className={`text-2xl font-black tracking-tight mb-3 ${tk.text}`}>You&apos;re in.</h2>
+              <h2 className={`text-2xl font-black tracking-tight mb-3 ${tk.text}`}>
+                You&apos;re in.
+              </h2>
               <p className={`text-sm leading-relaxed mb-8 max-w-xs mx-auto ${tk.textMuted}`}>
-                Account created. Check your inbox to verify your email, then start logging trades.
+                Account created. Check your inbox to verify your email,
+                then start logging trades.
               </p>
-              <a
-                href="/login"
-                className="inline-flex bg-[#50AF95] hover:bg-[#3d9e82] text-[#0a0a0a] font-bold px-8 py-2.5 rounded-md text-sm transition-colors no-underline"
+              <button
+                onClick={() => router.push("/login")}
+                className="inline-flex bg-[#50AF95] hover:bg-[#3d9e82] text-[#0a0a0a] font-bold px-8 py-2.5 rounded-md text-sm transition-colors"
               >
                 Go to Login
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -170,11 +225,11 @@ export default function RegisterPage() {
     );
   }
 
-  // ── Form ──────────────────────────────────────────────────
+  // ── Form
   return (
     <main className={pageWrap}>
 
-      {/* Theme toggle — floating */}
+      {/* Theme toggle */}
       <button
         onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         className={`fixed top-5 right-6 p-2 rounded-md border ${tk.border} ${tk.textMid} ${tk.socialHover} transition-colors`}
@@ -183,19 +238,17 @@ export default function RegisterPage() {
         {d ? <SunIcon /> : <MoonIcon />}
       </button>
 
-      {/* ── Split card ── */}
+      {/* Split card */}
       <div className={outerCard}>
 
-        {/* ── LEFT PANEL — brand pitch ── */}
-        <div
-          className={`
-            w-full md:w-[42%] flex flex-col justify-between p-10
-            border-b md:border-b-0 md:border-r ${tk.border}
-            ${d ? "bg-[#111111]" : "bg-[#f0efea]"}
-          `}
-        >
-          {/* Logo */}
+        {/* ── LEFT — brand pitch ── */}
+        <div className={`
+          w-full md:w-[42%] flex flex-col justify-between p-10
+          border-b md:border-b-0 md:border-r ${tk.border}
+          ${d ? "bg-[#111111]" : "bg-[#f0efea]"}
+        `}>
           <div>
+            {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
               <div className="w-8 h-8 flex items-center justify-center shrink-0">
                   <img 
@@ -204,7 +257,9 @@ export default function RegisterPage() {
                   className="w-full h-full object-contain"
                   />
               </div>
-              <span className={`font-bold text-sm tracking-tight ${tk.text}`}>CoinFession</span>
+              <span className={`font-bold text-sm tracking-tight ${tk.text}`}>
+                CoinFession
+              </span>
             </a>
 
             {/* Headline */}
@@ -218,25 +273,22 @@ export default function RegisterPage() {
             {/* Steps */}
             <div className="space-y-5">
               {[
-                { n: "1", title: "Create your account",    desc: "Takes less than a minute."                         },
-                { n: "2", title: "Log your first trade",   desc: "Coin, price, amount, date, and how you felt."      },
-                { n: "3", title: "Let AI mirror you back", desc: "See your patterns and get brutally honest feedback." },
+                { n: "1", title: "Create your account",    desc: "Takes less than a minute."                          },
+                { n: "2", title: "Log your first trade",   desc: "Coin, price, amount, date, and how you felt."       },
+                { n: "3", title: "Let AI mirror you back", desc: "See your patterns. Get brutally honest feedback."    },
               ].map(({ n, title, desc }) => (
                 <div key={n} className="flex items-start gap-3">
-                  <div
-                    className={`
-                      w-6 h-6 rounded-full shrink-0 flex items-center justify-center
-                      text-[11px] font-bold border mt-0.5
-                      ${d
-                        ? "border-white/[0.12] text-white/40"
-                        : "border-black/[0.15] text-black/40"
-                      }
-                    `}
-                  >
+                  <div className={`
+                    w-6 h-6 rounded-full shrink-0 flex items-center justify-center
+                    text-[11px] font-bold border mt-0.5
+                    ${d ? "border-white/[0.12] text-white/40" : "border-black/[0.15] text-black/40"}
+                  `}>
                     {n}
                   </div>
                   <div>
-                    <p className={`text-sm font-semibold leading-none mb-0.5 ${tk.text}`}>{title}</p>
+                    <p className={`text-sm font-semibold leading-none mb-0.5 ${tk.text}`}>
+                      {title}
+                    </p>
                     <p className={`text-xs leading-relaxed ${tk.textFaint}`}>{desc}</p>
                   </div>
                 </div>
@@ -250,10 +302,10 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* ── RIGHT PANEL — form ── */}
+        {/* ── RIGHT — form ── */}
         <div className={`flex-1 p-10 ${d ? "bg-[#0a0a0a]" : "bg-white"}`}>
 
-          {/* Form header */}
+          {/* Header */}
           <div className="mb-7">
             <h1 className={`text-xl font-black tracking-tight mb-1 ${tk.text}`}>
               Create an account
@@ -384,17 +436,16 @@ export default function RegisterPage() {
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
                 />
-                <div
-                  className={`
-                    w-4 h-4 rounded border transition-colors
-                    peer-checked:bg-[#50AF95] peer-checked:border-[#50AF95]
-                    peer-focus:ring-2 peer-focus:ring-[#50AF95]/30
-                    ${d ? "border-white/[0.2] bg-white/[0.04]" : "border-black/[0.2] bg-black/[0.03]"}
-                  `}
-                />
+                <div className={`
+                  w-4 h-4 rounded border transition-colors
+                  peer-checked:bg-[#50AF95] peer-checked:border-[#50AF95]
+                  peer-focus:ring-2 peer-focus:ring-[#50AF95]/30
+                  ${d ? "border-white/[0.2] bg-white/[0.04]" : "border-black/[0.2] bg-black/[0.03]"}
+                `}/>
                 <svg
                   className="absolute inset-0 w-4 h-4 pointer-events-none opacity-0 peer-checked:opacity-100 text-[#0a0a0a]"
-                  viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round"
                 >
                   <polyline points="3 8 6.5 11.5 13 4.5"/>
                 </svg>
@@ -407,7 +458,7 @@ export default function RegisterPage() {
               </span>
             </label>
 
-            {/* Form-level error */}
+            {/* Form-level error (API or terms) */}
             {errors.form && (
               <p className="text-xs text-[#E05454] bg-[#E05454]/8 border border-[#E05454]/20 rounded-md px-4 py-2.5">
                 {errors.form}
@@ -428,7 +479,7 @@ export default function RegisterPage() {
                   Creating account…
                 </>
               ) : (
-                <>Create account →</>
+                "Create account →"
               )}
             </button>
 
