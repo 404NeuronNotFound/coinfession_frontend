@@ -7,6 +7,12 @@ interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   label: string;
   error?: string;
   tk: Tokens;
+  /**
+   * Pass true when the parent renders its own label row
+   * (e.g. Login page adds "Forgot password?" inline with the label).
+   * The input still gets the correct id — just the <label> element is hidden.
+   */
+  hideLabel?: boolean;
 }
 
 function LockIcon() {
@@ -45,6 +51,7 @@ export default function PasswordInput({
   label,
   error,
   tk,
+  hideLabel = false,
   className = "",
   id,
   ...props
@@ -54,12 +61,14 @@ export default function PasswordInput({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label
-        htmlFor={inputId}
-        className={`text-[11px] font-semibold uppercase tracking-wider ${tk.textFaint}`}
-      >
-        {label}
-      </label>
+      {!hideLabel && label && (
+        <label
+          htmlFor={inputId}
+          className={`text-[11px] font-semibold uppercase tracking-wider ${tk.textFaint}`}
+        >
+          {label}
+        </label>
+      )}
 
       <div className="relative">
         {/* Lock icon — left */}
