@@ -41,6 +41,11 @@ export interface TokenPair {
   refresh: string;
 }
 
+/** Response from POST /api/token/refresh/ */
+export interface RefreshResponse {
+  access: string;
+}
+
 // ─── API error ────────────────────────────────────────────
 /**
  * Django REST Framework returns field errors as:
