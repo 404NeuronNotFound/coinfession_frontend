@@ -12,6 +12,10 @@ import { RegisterPayload, ApiError } from "@/types/auth";
 import { register } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 
+// Register page never writes to the auth store.
+// clearSession() is called on mount to wipe any stale session
+// in case an already-logged-in user navigates to /register.
+
 // ─── Local form state types ───────────────────────────────
 // These are UI-only — separate from RegisterPayload on purpose.
 // RegisterPayload goes to the API; FormFields drives the inputs.
@@ -82,6 +86,11 @@ export default function RegisterPage() {
   const tk = getTokens(theme);
   const d  = theme === "dark";
 
+  // Clear any stale session — register must always start fresh.
+  // If a user is somehow logged in and hits /register, wipe it.
+  const clearSession = useAuthStore((s) => s.clearSession);
+  useEffect(() => { clearSession(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", d);
   }, [d]);
@@ -94,8 +103,6 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
 
-  // ── Auth store — we store the new user after successful register
-  const setUser = useAuthStore((s) => s.setUser);
 
   // ── Re-validate touched fields on every keystroke
   useEffect(() => {
@@ -144,20 +151,12 @@ export default function RegisterPage() {
       // 3. Call POST /api/user/register/
       const newUser = await register(form);
 
-      // 4. Store the new user in Zustand (no token yet — not logged in)
-      setUser({
-        id:         newUser.id,
-        username:   newUser.username,
-        first_name: newUser.first_name,
-        last_name:  newUser.last_name,
-        email:      newUser.email,
-      });
-
-      // 5. Show success state
+      // 4. Registration succeeded — do NOT touch the auth store.
+      //    The new account has no tokens yet. The user must log in
+      //    to receive their access + refresh token pair.
+      //    Any previous session is irrelevant here — show success
+      //    and let the user navigate to /login.
       setSubmitted(true);
-
-      // Optional: auto-redirect to login after 2s
-      // setTimeout(() => router.push("/login"), 2000);
 
     } catch (err: unknown) {
       // 6. Map DRF field errors back to form fields
@@ -250,12 +249,8 @@ export default function RegisterPage() {
           <div>
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
-              <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                  <img 
-                  src="/CoinFessionLogo.svg" 
-                  alt="CoinFession Logo"
-                  className="w-full h-full object-contain"
-                  />
+              <div className="w-8 h-8 rounded-md bg-[#50AF95] flex items-center justify-center shrink-0">
+                <span className="text-[#0a0a0a] font-black text-sm">C</span>
               </div>
               <span className={`font-bold text-sm tracking-tight ${tk.text}`}>
                 CoinFession
