@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Theme, getTokens, Tokens } from "@/lib/theme";
+import { useThemeStore } from "@/stores/themeStore";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 
@@ -348,16 +348,13 @@ function CTA({ tk }: { tk: Tokens }) {
 
 // ── Page ──────────────────────────────────────────────────
 export default function LandingPage() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const tk = getTokens(theme);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
 
   return (
     <main className={`${tk.bg} ${tk.text} font-sans min-h-screen transition-colors duration-200`}>
-      <Navbar tk={tk} theme={theme} onToggleTheme={() => setTheme(t => t === "dark" ? "light" : "dark")} />
+      <Navbar tk={tk} theme={theme} onToggleTheme={toggleTheme} />
 
       <div className="max-w-6xl mx-auto">
         <Hero           tk={tk} />

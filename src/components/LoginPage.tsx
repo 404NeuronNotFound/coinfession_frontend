@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter }                       from "next/navigation";
 import { Theme, getTokens }                from "@/lib/theme";
+import { useThemeStore }                   from "@/stores/themeStore";
 import { SunIcon, MoonIcon }               from "@/components/ui/Icons";
 import InputField                          from "@/components/ui/InputField";
 import PasswordInput                       from "@/components/ui/PasswordInput";
@@ -44,13 +45,10 @@ export default function LoginPage() {
   const router = useRouter();
 
   // ── Theme
-  const [theme, setTheme] = useState<Theme>("dark");
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const tk = getTokens(theme);
   const d  = theme === "dark";
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", d);
-  }, [d]);
 
   // ── Form state
   const [form, setForm]         = useState<FormFields>(EMPTY);
@@ -159,7 +157,7 @@ export default function LoginPage() {
 
       {/* ── Theme toggle ── */}
       <button
-        onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+        onClick={toggleTheme}
         className={`fixed top-5 right-6 p-2 rounded-md border ${tk.border} ${tk.textMid} ${tk.socialHover} transition-colors`}
         aria-label="Toggle theme"
       >
@@ -178,12 +176,16 @@ export default function LoginPage() {
           <div>
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
-              <div className="w-8 h-8 rounded-md bg-[#50AF95] flex items-center justify-center shrink-0">
-                <span className="text-[#0a0a0a] font-black text-sm">C</span>
-              </div>
-              <span className={`font-bold text-sm tracking-tight ${tk.text}`}>
-                CoinFession
-              </span>
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                    <img 
+                    src="/CoinFessionLogo.svg" 
+                    alt="CoinFession Logo"
+                    className="w-full h-full object-contain"
+                    />
+                </div>
+                <span className={`font-bold text-sm tracking-tight ${tk.text}`}>
+                    CoinFession
+                </span>
             </a>
 
             {/* Headline */}
