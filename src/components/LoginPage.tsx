@@ -123,12 +123,8 @@ export default function LoginPage() {
           <div>
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
-              <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                <img
-                  src="/CoinFessionLogo.svg"
-                  alt="CoinFession Logo"
-                  className="w-full h-full object-contain"
-                />
+              <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
+                <span className="text-primary-foreground font-black text-sm">C</span>
               </div>
               <span className="font-bold text-sm tracking-tight text-foreground">
                 CoinFession
