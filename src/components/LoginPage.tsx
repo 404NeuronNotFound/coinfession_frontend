@@ -1,70 +1,52 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
-import { useRouter }                       from "next/navigation";
-import { Theme, getTokens }                from "@/lib/theme";
-import { useThemeStore }                   from "@/stores/themeStore";
-import { SunIcon, MoonIcon }               from "@/components/ui/Icons";
-import InputField                          from "@/components/ui/InputField";
-import PasswordInput                       from "@/components/ui/PasswordInput";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { useThemeStore } from "@/stores/themeStore";
+import { SunIcon, MoonIcon } from "@/components/ui/Icons";
 
 // ─── Types, API, Store ────────────────────────────────────
 import { LoginPayload, ApiError } from "@/types/auth";
-import { login, getMe }           from "@/api/auth";
-import { useAuthStore }           from "@/stores/authStore";
+import { login, getMe } from "@/api/auth";
+import { useAuthStore } from "@/stores/authStore";
 
-// ─── Local form types ─────────────────────────────────────
-// Kept separate from LoginPayload intentionally —
-// UI form state (what the inputs hold) is not the same concern
-// as the API payload (what gets sent over the wire).
+// ─── Local form state types ───────────────────────────────
 type FormFields = LoginPayload;
+type FormErrors = Partial<Record<keyof FormFields | "form", string>>;
 
-interface FormErrors {
-  username?: string;
-  password?: string;
-  form?:     string; // credential errors from Django: { "detail": "..." }
+const EMPTY: FormFields = { username: "", password: "" };
+
+// ─── Validation ───────────────────────────────────────────
+function validate(form: FormFields): FormErrors {
+  const errors: FormErrors = {};
+  if (!form.username?.trim()) errors.username = "Username is required";
+  if (!form.password?.trim()) errors.password = "Password is required";
+  return errors;
 }
 
-const EMPTY: FormFields = {
-  username: "",
-  password: "",
-};
-
-// ─── Client-side validation ───────────────────────────────
-// Minimal — only checks fields are not empty.
-// Credential correctness is the server's job.
-function validate(data: FormFields): FormErrors {
-  const e: FormErrors = {};
-  if (!data.username.trim()) e.username = "Username is required.";
-  if (!data.password)        e.password = "Password is required.";
-  return e;
-}
-
-// ─── Page ─────────────────────────────────────────────────
 export default function LoginPage() {
   const router = useRouter();
 
   // ── Theme
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const tk = getTokens(theme);
-  const d  = theme === "dark";
+  const d = theme === "dark";
 
   // ── Form state
-  const [form, setForm]         = useState<FormFields>(EMPTY);
-  const [errors, setErrors]     = useState<FormErrors>({});
-  const [touched, setTouched]   = useState<Partial<Record<keyof FormFields, boolean>>>({});
+  const [form, setForm] = useState<FormFields>(EMPTY);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormFields, boolean>>>({});
   const [submitting, setSubmitting] = useState(false);
 
   // ── Auth store — pull what we need
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const setSession      = useAuthStore((s) => s.setSession);
-  const clearSession    = useAuthStore((s) => s.clearSession);
+  const setSession = useAuthStore((s) => s.setSession);
+  const clearSession = useAuthStore((s) => s.clearSession);
 
   // ── Guard: already logged in → go straight to dashboard
-  // Runs on mount and whenever isAuthenticated changes.
-  // Covers the case where a user navigates to /login manually
-  // while still holding a valid session in localStorage.
   useEffect(() => {
     if (isAuthenticated) {
       router.replace("/dashboard");
@@ -72,11 +54,9 @@ export default function LoginPage() {
   }, [isAuthenticated, router]);
 
   // ── Re-validate touched fields on every keystroke
-  // Errors only show after the user has touched a field (onBlur),
-  // and clear as soon as the value becomes valid again.
   useEffect(() => {
     if (Object.keys(touched).length === 0) return;
-    const all  = validate(form);
+    const all = validate(form);
     const next: FormErrors = {};
     (Object.keys(touched) as (keyof FormFields)[]).forEach((k) => {
       if (touched[k] && all[k]) next[k] = all[k];
@@ -94,10 +74,8 @@ export default function LoginPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    // Touch all fields so every error shows at once on submit
     setTouched({ username: true, password: true });
 
-    // 1. Client-side check — don't hit the API with empty fields
     const clientErrors = validate(form);
     if (Object.keys(clientErrors).length > 0) {
       setErrors(clientErrors);
@@ -106,93 +84,62 @@ export default function LoginPage() {
 
     setSubmitting(true);
     setErrors({});
-
-    // Clear any stale partial state from a previous failed attempt
-    // before writing a fresh session. This prevents leftover data
-    // (e.g. a user object without tokens) from persisting in the store.
     clearSession();
 
     try {
-      // 2. POST /api/token/
-      //    Django Simple JWT validates username + password.
-      //    On success: returns { access, refresh }
-      //    On failure: throws ApiError with { "detail": "No active account..." }
       const tokens = await login(form);
-
-      // 3. GET /api/user/me/
-      //    Use the new access token immediately to fetch the user profile.
-      //    If this call fails (unlikely but possible), we do not store
-      //    the session — better to show an error than a half-authenticated state.
       const user = await getMe(tokens.access);
-
-      // 4. Store both tokens + user in Zustand (persisted to localStorage).
-      //    After this point isAuthenticated becomes true,
-      //    the useEffect above fires, and router.replace("/dashboard") runs.
       setSession(tokens, user);
-
     } catch (err: unknown) {
       const apiErr = err as ApiError;
-
-      // Django returns { "detail": "No active account found..." }
-      // for wrong credentials — surfaces as apiErr.message.
-      // Any other failure (network, server error) falls back to a
-      // generic message so we never show raw JSON to the user.
       setErrors({
         form: apiErr.message ?? "Invalid username or password. Please try again.",
       });
-
-      // Wipe any partial state that may have been written before the error
       clearSession();
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ── Styles
-  const pageWrap  = `min-h-screen flex items-center justify-center px-4 py-10 transition-colors duration-200 ${tk.bg}`;
-  const outerCard = `w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border ${tk.border}`;
-
   return (
-    <main className={pageWrap}>
+    <main className={`min-h-screen flex items-center justify-center px-4 py-10 transition-colors duration-200 ${d ? "bg-background" : "bg-background"}`}>
 
       {/* ── Theme toggle ── */}
-      <button
+      <Button
         onClick={toggleTheme}
-        className={`fixed top-5 right-6 p-2 rounded-md border ${tk.border} ${tk.textMid} ${tk.socialHover} transition-colors`}
+        variant="outline"
+        size="icon"
+        className="fixed top-5 right-6"
         aria-label="Toggle theme"
       >
         {d ? <SunIcon /> : <MoonIcon />}
-      </button>
+      </Button>
 
       {/* ── Split card ── */}
-      <div className={outerCard}>
+      <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border">
 
         {/* ─── LEFT — brand pitch ─────────────────────────── */}
-        <div className={`
-          w-full md:w-[42%] flex flex-col justify-between p-10
-          border-b md:border-b-0 md:border-r ${tk.border}
-          ${d ? "bg-[#111111]" : "bg-[#f0efea]"}
-        `}>
+        <div className={`w-full md:w-[42%] flex flex-col justify-between p-10 border-b md:border-b-0 md:border-r border-border ${d ? "bg-card" : "bg-card"}`}>
           <div>
             {/* Logo */}
             <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
-                <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                    <img 
-                    src="/CoinFessionLogo.svg" 
-                    alt="CoinFession Logo"
-                    className="w-full h-full object-contain"
-                    />
-                </div>
-                <span className={`font-bold text-sm tracking-tight ${tk.text}`}>
-                    CoinFession
-                </span>
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <img
+                  src="/CoinFessionLogo.svg"
+                  alt="CoinFession Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="font-bold text-sm tracking-tight text-foreground">
+                CoinFession
+              </span>
             </a>
 
             {/* Headline */}
-            <h2 className={`text-2xl font-black tracking-tight leading-snug mb-3 ${tk.text}`}>
+            <h2 className="text-2xl font-black tracking-tight leading-snug mb-3 text-foreground">
               Welcome back.<br />Your journal missed you.
             </h2>
-            <p className={`text-sm leading-relaxed mb-8 ${tk.textMuted}`}>
+            <p className="text-sm leading-relaxed mb-8 text-muted-foreground">
               Log in to pick up where you left off — trades, patterns,
               and your AI feedback are waiting.
             </p>
@@ -201,36 +148,30 @@ export default function LoginPage() {
             <div className="space-y-5">
               {[
                 {
-                  n:     "1",
+                  n: "1",
                   title: "Your trade history",
-                  desc:  "Every buy and sell you've logged, in one place.",
+                  desc: "Every buy and sell you've logged, in one place.",
                 },
                 {
-                  n:     "2",
+                  n: "2",
                   title: "Emotion patterns",
-                  desc:  "See exactly which feelings cost you money.",
+                  desc: "See exactly which feelings cost you money.",
                 },
                 {
-                  n:     "3",
+                  n: "3",
                   title: "AI mirror",
-                  desc:  "Updated analysis based on your latest trades.",
+                  desc: "Updated analysis based on your latest trades.",
                 },
               ].map(({ n, title, desc }) => (
                 <div key={n} className="flex items-start gap-3">
-                  <div className={`
-                    w-6 h-6 rounded-full shrink-0 flex items-center justify-center
-                    text-[11px] font-bold border mt-0.5
-                    ${d
-                      ? "border-white/[0.12] text-white/40"
-                      : "border-black/[0.15] text-black/40"}
-                  `}>
+                  <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold border border-border text-muted-foreground mt-0.5">
                     {n}
                   </div>
                   <div>
-                    <p className={`text-sm font-semibold leading-none mb-0.5 ${tk.text}`}>
+                    <p className="text-sm font-semibold leading-none mb-0.5 text-foreground">
                       {title}
                     </p>
-                    <p className={`text-xs leading-relaxed ${tk.textFaint}`}>{desc}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{desc}</p>
                   </div>
                 </div>
               ))}
@@ -238,20 +179,20 @@ export default function LoginPage() {
           </div>
 
           {/* Footer note */}
-          <p className={`text-xs mt-10 ${tk.textGhost}`}>
+          <p className="text-xs mt-10 text-muted-foreground/50">
             Free forever for personal use. No credit card required.
           </p>
         </div>
 
         {/* ─── RIGHT — form ───────────────────────────────── */}
-        <div className={`flex-1 p-10 ${d ? "bg-[#0a0a0a]" : "bg-white"}`}>
+        <div className="flex-1 p-10 bg-background">
 
           {/* Form header */}
           <div className="mb-7">
-            <h1 className={`text-xl font-black tracking-tight mb-1 ${tk.text}`}>
+            <h1 className="text-xl font-black tracking-tight mb-1 text-foreground">
               Sign in
             </h1>
-            <p className={`text-sm ${tk.textMuted}`}>
+            <p className="text-sm text-muted-foreground">
               Enter your credentials to access your journal
             </p>
           </div>
@@ -259,71 +200,68 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
 
             {/* ── Username ── */}
-            <InputField
-              tk={tk}
-              label="Username"
-              id="username"
-              name="username"
-              type="text"
-              autoComplete="username"
-              placeholder="yourhandle"
-              value={form.username}
-              onChange={(e) => handleChange("username", e.target.value)}
-              onBlur={() => handleBlur("username")}
-              error={errors.username}
-              icon={
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2"
-                  strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              }
-            />
+            <div>
+              <label htmlFor="username" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                Username
+              </label>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                placeholder="yourhandle"
+                value={form.username}
+                onChange={(e) => handleChange("username", e.target.value)}
+                onBlur={() => handleBlur("username")}
+                className={errors.username ? "border-destructive" : ""}
+              />
+              {errors.username && (
+                <p className="text-xs text-destructive mt-1">{errors.username}</p>
+              )}
+            </div>
 
-            {/* ── Password — custom label row with "Forgot password?" ── */}
+            {/* ── Password ── */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label
-                  htmlFor="password"
-                  className={`text-[11px] font-semibold uppercase tracking-wider ${tk.textFaint}`}
-                >
+                <label htmlFor="password" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Password
                 </label>
                 <a
                   href="/forgot-password"
-                  className={`text-[11px] no-underline transition-colors ${tk.textFaint} hover:text-[#50AF95]`}
+                  className="text-[11px] text-muted-foreground hover:text-primary transition-colors"
                 >
                   Forgot password?
                 </a>
               </div>
-              <PasswordInput
-                tk={tk}
-                label="password"
+              <Input
                 id="password"
                 name="password"
+                type="password"
                 autoComplete="current-password"
                 placeholder="Your password"
                 value={form.password}
                 onChange={(e) => handleChange("password", e.target.value)}
                 onBlur={() => handleBlur("password")}
-                error={errors.password}
-                hideLabel
+                className={errors.password ? "border-destructive" : ""}
               />
+              {errors.password && (
+                <p className="text-xs text-destructive mt-1">{errors.password}</p>
+              )}
             </div>
 
             {/* ── Credential error from Django ── */}
             {errors.form && (
-              <p className="text-xs text-[#E05454] bg-[#E05454]/8 border border-[#E05454]/20 rounded-md px-4 py-2.5 leading-relaxed">
+              <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-4 py-2.5 leading-relaxed">
                 {errors.form}
-              </p>
+              </div>
             )}
 
             {/* ── Submit ── */}
-            <button
+            <Button
               type="submit"
               disabled={submitting}
-              className="w-full bg-[#50AF95] hover:bg-[#3d9e82] disabled:opacity-50 disabled:cursor-not-allowed text-[#0a0a0a] font-bold py-2.5 rounded-md text-sm transition-colors flex items-center justify-center gap-2 mt-2"
+              className="w-full mt-2"
+              size="lg"
             >
               {submitting ? (
                 <>
@@ -339,21 +277,21 @@ export default function LoginPage() {
               ) : (
                 "Sign in →"
               )}
-            </button>
+            </Button>
 
             {/* ── Divider ── */}
             <div className="flex items-center gap-3">
-              <div className={`flex-1 h-px ${d ? "bg-white/[0.06]" : "bg-black/[0.06]"}`} />
-              <span className={`text-[11px] ${tk.textGhost}`}>or</span>
-              <div className={`flex-1 h-px ${d ? "bg-white/[0.06]" : "bg-black/[0.06]"}`} />
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-[11px] text-muted-foreground/50">or</span>
+              <div className="flex-1 h-px bg-border" />
             </div>
 
             {/* ── Register link ── */}
-            <p className={`text-xs text-center ${tk.textMuted}`}>
+            <p className="text-xs text-center text-muted-foreground">
               Don&apos;t have an account?{" "}
               <a
                 href="/register"
-                className="text-[#50AF95] font-semibold hover:underline"
+                className="text-primary font-semibold hover:underline"
               >
                 Create one free
               </a>
