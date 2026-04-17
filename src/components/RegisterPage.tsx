@@ -404,7 +404,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full"
+              className="w-full cursor-pointer"
               size="lg"
             >
               {submitting ? (

@@ -256,7 +256,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full mt-2"
+              className="w-full mt-2 cursor-pointer"
               size="lg"
             >
               {submitting ? (
