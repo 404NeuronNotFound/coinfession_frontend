@@ -63,6 +63,7 @@ export default function Navbar({
           variant="outline"
           size="icon"
           aria-label="Toggle theme"
+          className="cursor-pointer"
         >
           {d ? <SunIcon /> : <MoonIcon />}
         </Button>
