@@ -26,14 +26,14 @@ export default function Navbar({
   const d = theme === "dark";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 border-b border-border bg-background transition-colors duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-border bg-background transition-colors duration-200">
 
       {/* Logo */}
       <a href="/" className="flex items-center gap-2.5 no-underline">
         <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
                 <span className="text-primary-foreground font-black text-sm">C</span>
         </div>
-        <div className="leading-none">
+        <div className="leading-none hidden sm:block">
           <span className="font-bold text-sm tracking-tight text-foreground">CoinFession</span>
           <span className="text-xs ml-2 text-muted-foreground">Trade Journal</span>
         </div>
@@ -68,10 +68,10 @@ export default function Navbar({
           {d ? <SunIcon /> : <MoonIcon />}
         </Button>
 
-        <Button variant="outline" asChild className="hidden md:inline-flex">
+        <Button variant="outline" asChild className="hidden md:inline-flex text-sm">
           <a href="/login">Log In</a>
         </Button>
-        <Button asChild>
+        <Button asChild className="text-sm">
           <a href="/register">Get Started</a>
         </Button>
       </div>
