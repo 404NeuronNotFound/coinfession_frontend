@@ -116,13 +116,13 @@ export default function LoginPage() {
       </Button>
 
       {/* ── Split card ── */}
-      <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border">
+      <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-xl sm:rounded-2xl overflow-hidden border border-border">
 
         {/* ─── LEFT — brand pitch ─────────────────────────── */}
-        <div className={`w-full md:w-[42%] flex flex-col justify-between p-10 border-b md:border-b-0 md:border-r border-border ${d ? "bg-card" : "bg-card"}`}>
+        <div className={`w-full md:w-[42%] flex flex-col justify-between p-6 sm:p-10 border-b md:border-b-0 md:border-r border-border ${d ? "bg-card" : "bg-card"}`}>
           <div>
             {/* Logo */}
-            <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
+            <a href="/" className="flex items-center gap-2.5 no-underline mb-8 sm:mb-10">
               <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
                 <span className="text-primary-foreground font-black text-sm">C</span>
               </div>
@@ -132,16 +132,16 @@ export default function LoginPage() {
             </a>
 
             {/* Headline */}
-            <h2 className="text-2xl font-black tracking-tight leading-snug mb-3 text-foreground">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug mb-3 text-foreground">
               Welcome back.<br />Your journal missed you.
             </h2>
-            <p className="text-sm leading-relaxed mb-8 text-muted-foreground">
+            <p className="text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8 text-muted-foreground">
               Log in to pick up where you left off — trades, patterns,
               and your AI feedback are waiting.
             </p>
 
             {/* What's inside reminders */}
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5 hidden sm:block">
               {[
                 {
                   n: "1",
@@ -175,20 +175,20 @@ export default function LoginPage() {
           </div>
 
           {/* Footer note */}
-          <p className="text-xs mt-10 text-muted-foreground/50">
+          <p className="text-xs mt-8 sm:mt-10 text-muted-foreground/50 hidden sm:block">
             Free forever for personal use. No credit card required.
           </p>
         </div>
 
         {/* ─── RIGHT — form ───────────────────────────────── */}
-        <div className="flex-1 p-10 bg-background">
+        <div className="flex-1 p-6 sm:p-10 bg-background">
 
           {/* Form header */}
-          <div className="mb-7">
-            <h1 className="text-xl font-black tracking-tight mb-1 text-foreground">
+          <div className="mb-6 sm:mb-7">
+            <h1 className="text-lg sm:text-xl font-black tracking-tight mb-1 text-foreground">
               Sign in
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Enter your credentials to access your journal
             </p>
           </div>
@@ -209,7 +209,7 @@ export default function LoginPage() {
                 value={form.username}
                 onChange={(e) => handleChange("username", e.target.value)}
                 onBlur={() => handleBlur("username")}
-                className={errors.username ? "border-destructive" : ""}
+                className={`text-sm ${errors.username ? "border-destructive" : ""}`}
               />
               {errors.username && (
                 <p className="text-xs text-destructive mt-1">{errors.username}</p>
@@ -218,15 +218,15 @@ export default function LoginPage() {
 
             {/* ── Password ── */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1.5 gap-2">
                 <label htmlFor="password" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Password
                 </label>
                 <a
                   href="/forgot-password"
-                  className="text-[11px] text-muted-foreground hover:text-primary transition-colors"
+                  className="text-[11px] text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                 >
-                  Forgot password?
+                  Forgot?
                 </a>
               </div>
               <Input
@@ -238,7 +238,7 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={(e) => handleChange("password", e.target.value)}
                 onBlur={() => handleBlur("password")}
-                className={errors.password ? "border-destructive" : ""}
+                className={`text-sm ${errors.password ? "border-destructive" : ""}`}
               />
               {errors.password && (
                 <p className="text-xs text-destructive mt-1">{errors.password}</p>
@@ -256,7 +256,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full mt-2 cursor-pointer"
+              className="w-full mt-2 cursor-pointer text-sm sm:text-base"
               size="lg"
             >
               {submitting ? (
