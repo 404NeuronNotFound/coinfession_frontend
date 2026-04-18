@@ -136,22 +136,22 @@ export default function RegisterPage() {
           {d ? <SunIcon /> : <MoonIcon />}
         </Button>
 
-        <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border items-stretch">
-          <div className="flex-1 flex items-center justify-center p-16 text-center">
+        <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-xl sm:rounded-2xl overflow-hidden border border-border items-stretch">
+          <div className="flex-1 flex items-center justify-center p-8 sm:p-16 text-center">
             <div>
               <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-6">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <h2 className="text-2xl font-black tracking-tight mb-3 text-foreground">
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-3 text-foreground">
                 You&apos;re in.
               </h2>
-              <p className="text-sm leading-relaxed mb-8 max-w-xs mx-auto text-muted-foreground">
+              <p className="text-xs sm:text-sm leading-relaxed mb-8 max-w-xs mx-auto text-muted-foreground">
                 Account created. Check your inbox to verify your email,
                 then start logging trades.
               </p>
-              <Button onClick={() => router.push("/login")} size="lg">
+              <Button onClick={() => router.push("/login")} size="lg" className="text-sm sm:text-base">
                 Go to Login
               </Button>
             </div>
@@ -177,13 +177,13 @@ export default function RegisterPage() {
       </Button>
 
       {/* Split card */}
-      <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-2xl overflow-hidden border border-border">
+      <div className="w-full max-w-4xl flex flex-col md:flex-row rounded-xl sm:rounded-2xl overflow-hidden border border-border">
 
         {/* ── LEFT — brand pitch ── */}
-        <div className="w-full md:w-[42%] flex flex-col justify-between p-10 border-b md:border-b-0 md:border-r border-border bg-card">
+        <div className={`w-full md:w-[42%] flex flex-col justify-between p-6 sm:p-10 border-b md:border-b-0 md:border-r border-border ${d ? "bg-card" : "bg-card"}`}>
           <div>
             {/* Logo */}
-            <a href="/" className="flex items-center gap-2.5 no-underline mb-10">
+            <a href="/" className="flex items-center gap-2.5 no-underline mb-8 sm:mb-10">
               <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center shrink-0">
                 <span className="text-primary-foreground font-black text-sm">C</span>
               </div>
@@ -193,15 +193,15 @@ export default function RegisterPage() {
             </a>
 
             {/* Headline */}
-            <h2 className="text-2xl font-black tracking-tight leading-snug mb-3 text-foreground">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug mb-3 text-foreground">
               Start your<br />trade journal today.
             </h2>
-            <p className="text-sm leading-relaxed mb-8 text-muted-foreground">
+            <p className="text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8 text-muted-foreground">
               Create your free account and stop repeating the same costly trading mistakes.
             </p>
 
             {/* Steps */}
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5 hidden sm:block">
               {[
                 { n: "1", title: "Create your account", desc: "Takes less than a minute." },
                 { n: "2", title: "Log your first trade", desc: "Coin, price, amount, date, and how you felt." },
@@ -223,20 +223,20 @@ export default function RegisterPage() {
           </div>
 
           {/* Footer note */}
-          <p className="text-xs mt-10 text-muted-foreground/50">
+          <p className="text-xs mt-8 sm:mt-10 text-muted-foreground/50 hidden sm:block">
             Free forever for personal use. No credit card required.
           </p>
         </div>
 
         {/* ── RIGHT — form ── */}
-        <div className="flex-1 p-10 bg-background">
+        <div className="flex-1 p-6 sm:p-10 bg-background">
 
           {/* Header */}
-          <div className="mb-7">
-            <h1 className="text-xl font-black tracking-tight mb-1 text-foreground">
+          <div className="mb-6 sm:mb-7">
+            <h1 className="text-lg sm:text-xl font-black tracking-tight mb-1 text-foreground">
               Create an account
             </h1>
-            <p className="text-sm text-muted-foreground">Fill in your details to get started</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Fill in your details to get started</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -255,7 +255,7 @@ export default function RegisterPage() {
                 value={form.username}
                 onChange={(e) => handleChange("username", e.target.value)}
                 onBlur={() => handleBlur("username")}
-                className={errors.username ? "border-destructive" : ""}
+                className={`text-sm ${errors.username ? "border-destructive" : ""}`}
               />
               {errors.username && (
                 <p className="text-xs text-destructive mt-1">{errors.username}</p>
@@ -263,7 +263,7 @@ export default function RegisterPage() {
             </div>
 
             {/* First + Last name */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="first_name" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
                   First name
@@ -277,7 +277,7 @@ export default function RegisterPage() {
                   value={form.first_name}
                   onChange={(e) => handleChange("first_name", e.target.value)}
                   onBlur={() => handleBlur("first_name")}
-                  className={errors.first_name ? "border-destructive" : ""}
+                  className={`text-sm ${errors.first_name ? "border-destructive" : ""}`}
                 />
                 {errors.first_name && (
                   <p className="text-xs text-destructive mt-1">{errors.first_name}</p>
@@ -296,7 +296,7 @@ export default function RegisterPage() {
                   value={form.last_name}
                   onChange={(e) => handleChange("last_name", e.target.value)}
                   onBlur={() => handleBlur("last_name")}
-                  className={errors.last_name ? "border-destructive" : ""}
+                  className={`text-sm ${errors.last_name ? "border-destructive" : ""}`}
                 />
                 {errors.last_name && (
                   <p className="text-xs text-destructive mt-1">{errors.last_name}</p>
@@ -318,7 +318,7 @@ export default function RegisterPage() {
                 value={form.email}
                 onChange={(e) => handleChange("email", e.target.value)}
                 onBlur={() => handleBlur("email")}
-                className={errors.email ? "border-destructive" : ""}
+                className={`text-sm ${errors.email ? "border-destructive" : ""}`}
               />
               {errors.email && (
                 <p className="text-xs text-destructive mt-1">{errors.email}</p>
@@ -326,7 +326,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Password + Confirm */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="password" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
                   Password
@@ -340,7 +340,7 @@ export default function RegisterPage() {
                   value={form.password}
                   onChange={(e) => handleChange("password", e.target.value)}
                   onBlur={() => handleBlur("password")}
-                  className={errors.password ? "border-destructive" : ""}
+                  className={`text-sm ${errors.password ? "border-destructive" : ""}`}
                 />
                 {errors.password && (
                   <p className="text-xs text-destructive mt-1">{errors.password}</p>
@@ -359,7 +359,7 @@ export default function RegisterPage() {
                   value={form.confirm_password}
                   onChange={(e) => handleChange("confirm_password", e.target.value)}
                   onBlur={() => handleBlur("confirm_password")}
-                  className={errors.confirm_password ? "border-destructive" : ""}
+                  className={`text-sm ${errors.confirm_password ? "border-destructive" : ""}`}
                 />
                 {errors.confirm_password && (
                   <p className="text-xs text-destructive mt-1">{errors.confirm_password}</p>
@@ -404,7 +404,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full cursor-pointer"
+              className="w-full cursor-pointer text-sm sm:text-base"
               size="lg"
             >
               {submitting ? (
