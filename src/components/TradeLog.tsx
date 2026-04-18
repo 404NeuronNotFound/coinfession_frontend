@@ -80,7 +80,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
   const fmtDec = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
