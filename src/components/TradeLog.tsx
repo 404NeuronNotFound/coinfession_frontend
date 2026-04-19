@@ -20,6 +20,7 @@ interface Trade {
   pnl?: number;
   pnlPct?: number;
   emotion?: string;
+  notes?: string;
   color: string;
 }
 
@@ -30,16 +31,16 @@ interface TradeLogProps {
 }
 
 const MOCK_TRADES: Trade[] = [
-  { id: 1, date: "04-15", type: "BUY", coin: "Bitcoin", ticker: "BTC", quantity: 0.05, buyPrice: 61800, fee: 12.36, color: "#F7931A" },
-  { id: 2, date: "04-12", type: "SELL", coin: "Ethereum", ticker: "ETH", quantity: 1, buyPrice: 2800, sellPrice: 2420, fee: 9.68, pnl: 388, pnlPct: 13.8, color: "#627EEA" },
-  { id: 3, date: "04-10", type: "BUY", coin: "Avalanche", ticker: "AVAX", quantity: 10, buyPrice: 35.4, fee: 3.54, color: "#E84142" },
-  { id: 4, date: "04-05", type: "SELL", coin: "Bitcoin", ticker: "BTC", quantity: 0.1, buyPrice: 55000, sellPrice: 63200, fee: 18.96, pnl: 880, pnlPct: 14.9, color: "#F7931A" },
-  { id: 5, date: "03-28", type: "BUY", coin: "Solana", ticker: "SOL", quantity: 5, buyPrice: 142, fee: 7.10, color: "#9945FF" },
-  { id: 6, date: "03-20", type: "SELL", coin: "Solana", ticker: "SOL", quantity: 3, buyPrice: 142, sellPrice: 168, fee: 6.30, pnl: 71, pnlPct: 18.3, color: "#9945FF" },
-  { id: 7, date: "03-15", type: "BUY", coin: "Ethereum", ticker: "ETH", quantity: 2, buyPrice: 2750, fee: 11.00, color: "#627EEA" },
-  { id: 8, date: "03-10", type: "SELL", coin: "Avalanche", ticker: "AVAX", quantity: 15, buyPrice: 28, sellPrice: 22, fee: 4.95, pnl: -94.5, pnlPct: -21.4, color: "#E84142" },
-  { id: 9, date: "03-05", type: "BUY", coin: "Bitcoin", ticker: "BTC", quantity: 0.08, buyPrice: 58200, fee: 14.00, color: "#F7931A" },
-  { id: 10, date: "02-28", type: "SELL", coin: "Ethereum", ticker: "ETH", quantity: 1.5, buyPrice: 2600, sellPrice: 2940, fee: 13.23, pnl: 498, pnlPct: 13.1, color: "#627EEA" },
+  { id: 1, date: "04-15", type: "BUY", coin: "Bitcoin", ticker: "BTC", quantity: 0.05, buyPrice: 61800, fee: 12.36, emotion: "Disciplined", notes: "Strong support level", color: "#F7931A" },
+  { id: 2, date: "04-12", type: "SELL", coin: "Ethereum", ticker: "ETH", quantity: 1, buyPrice: 2800, sellPrice: 2420, fee: 9.68, pnl: 388, pnlPct: 13.8, emotion: "Panic Sold", notes: "Sold too early", color: "#627EEA" },
+  { id: 3, date: "04-10", type: "BUY", coin: "Avalanche", ticker: "AVAX", quantity: 10, buyPrice: 35.4, fee: 3.54, emotion: "FOMO", notes: "Chased pump", color: "#E84142" },
+  { id: 4, date: "04-05", type: "SELL", coin: "Bitcoin", ticker: "BTC", quantity: 0.1, buyPrice: 55000, sellPrice: 63200, fee: 18.96, pnl: 880, pnlPct: 14.9, emotion: "Disciplined", notes: "Hit target", color: "#F7931A" },
+  { id: 5, date: "03-28", type: "BUY", coin: "Solana", ticker: "SOL", quantity: 5, buyPrice: 142, fee: 7.10, emotion: "Patient", notes: "Waiting for dip", color: "#9945FF" },
+  { id: 6, date: "03-20", type: "SELL", coin: "Solana", ticker: "SOL", quantity: 3, buyPrice: 142, sellPrice: 168, fee: 6.30, pnl: 71, pnlPct: 18.3, emotion: "Disciplined", notes: "Partial profit", color: "#9945FF" },
+  { id: 7, date: "03-15", type: "BUY", coin: "Ethereum", ticker: "ETH", quantity: 2, buyPrice: 2750, fee: 11.00, emotion: "Patient", notes: "DCA strategy", color: "#627EEA" },
+  { id: 8, date: "03-10", type: "SELL", coin: "Avalanche", ticker: "AVAX", quantity: 15, buyPrice: 28, sellPrice: 22, fee: 4.95, pnl: -94.5, pnlPct: -21.4, emotion: "Panic Sold", notes: "Cut losses", color: "#E84142" },
+  { id: 9, date: "03-05", type: "BUY", coin: "Bitcoin", ticker: "BTC", quantity: 0.08, buyPrice: 58200, fee: 14.00, emotion: "Disciplined", notes: "Accumulating", color: "#F7931A" },
+  { id: 10, date: "02-28", type: "SELL", coin: "Ethereum", ticker: "ETH", quantity: 1.5, buyPrice: 2600, sellPrice: 2940, fee: 13.23, pnl: 498, pnlPct: 13.1, emotion: "Disciplined", notes: "Rebalancing", color: "#627EEA" },
 ];
 
 export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }: TradeLogProps) {
@@ -205,6 +206,8 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
                 <TableHead className="text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">SELL PRICE</TableHead>
                 <TableHead className="text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">FEE</TableHead>
                 <TableHead className="text-right text-xs font-semibold text-muted-foreground">P&L</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground hidden lg:table-cell">EMOTION</TableHead>
+                <TableHead className="text-xs font-semibold text-muted-foreground hidden xl:table-cell">NOTES</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -246,6 +249,16 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
                     ) : (
                       <span className="text-muted-foreground">Open</span>
                     )}
+                  </TableCell>
+                  <TableCell className="text-xs hidden lg:table-cell">
+                    {trade.emotion && (
+                      <Badge variant="outline" className="text-xs">
+                        {trade.emotion}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground hidden xl:table-cell max-w-xs truncate">
+                    {trade.notes || "—"}
                   </TableCell>
                 </TableRow>
               ))}
