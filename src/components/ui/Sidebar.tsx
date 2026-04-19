@@ -23,7 +23,7 @@ const navItems = [
   { href: '/tradelog', label: 'Trade Log', Icon: TradeLogIcon },
   { href: '/portfolio', label: 'Portfolio', Icon: PortfolioIcon },
   { href: '/pnl-analysis', label: 'P&L Analysis', Icon: PnLIcon },
-  { href: '/emotions', label: 'Emotion Journal', Icon: EmotionIcon },
+  { href: '/emotionjournal', label: 'Emotion Journal', Icon: EmotionIcon },
   { href: '/reports', label: 'Monthly Report', Icon: ReportIcon },
   { href: '/feedback', label: 'AI Feedback', Icon: AIFeedbackIcon },
 ];
