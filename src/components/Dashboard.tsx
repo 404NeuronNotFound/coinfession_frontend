@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import DashboardHeader from "@/components/ui/DashboardHeader";
@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
   return (
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24">
         {/* Header */}
         <DashboardHeader
           title="Dashboard"

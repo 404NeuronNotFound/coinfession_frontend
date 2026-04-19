@@ -20,7 +20,7 @@ import {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
-  { href: '/trades', label: 'Trade Log', Icon: TradeLogIcon },
+  { href: '/tradelog', label: 'Trade Log', Icon: TradeLogIcon },
   { href: '/portfolio', label: 'Portfolio', Icon: PortfolioIcon },
   { href: '/pnl', label: 'P&L Analysis', Icon: PnLIcon },
   { href: '/emotions', label: 'Emotion Journal', Icon: EmotionIcon },
