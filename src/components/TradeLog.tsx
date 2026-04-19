@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
+import DashboardHeader from "@/components/ui/DashboardHeader";
 
 interface Trade {
   id: number;
@@ -83,22 +84,12 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
   return (
     <div className="w-full space-y-6 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Trade Log</h1>
-          <p className="text-sm text-muted-foreground mt-1">{totalTrades} trades · all time</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onExport} className="gap-2">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </Button>
-          <Button size="sm" onClick={onLogTrade} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Log Trade
-          </Button>
-        </div>
-      </div>
+      <DashboardHeader
+        title="Trade Log"
+        subtitle="Complete trade history · April 2026"
+        onLogTrade={onLogTrade}
+        onExport={onExport}
+      />
 
       {/* Filters */}
       <div className="space-y-4">
@@ -111,7 +102,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10"
+              className="h-10 text-sm"
             />
           </div>
         </div>
@@ -123,7 +114,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
               setFilterType(e.target.value as "ALL" | "BUY" | "SELL");
               setCurrentPage(1);
             }}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
           >
             <option value="ALL">All types</option>
             <option value="BUY">Buy</option>
@@ -136,7 +127,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
               setFilterEmotion(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
           >
             <option value="ALL">All emotions</option>
             <option value="Disciplined">Disciplined</option>
@@ -151,7 +142,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
               setFilterPnL(e.target.value);
               setCurrentPage(1);
             }}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
           >
             <option value="ALL">All P&L</option>
             <option value="PROFIT">Profit</option>
@@ -160,35 +151,35 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Input type="date" className="h-10 w-32" />
-          <Input type="date" className="h-10 w-32" />
-          <Button variant="outline" size="sm">Clear</Button>
+          <Input type="date" className="h-10 w-32 text-sm" />
+          <Input type="date" className="h-10 w-32 text-sm" />
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm">Clear</Button>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Total Trades</div>
-          <div className="text-xl sm:text-2xl font-bold text-foreground">{totalTrades}</div>
+          <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Total Trades</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">{totalTrades}</div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Win Rate</div>
-          <div className="text-xl sm:text-2xl font-bold text-foreground">{winRate}%</div>
+          <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Win Rate</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">{winRate}%</div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Realized P&L</div>
-          <div className={`text-xl sm:text-2xl font-bold ${totalPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
+          <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Realized P&L</div>
+          <div className={`text-xl sm:text-2xl font-black ${totalPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
             {totalPnL >= 0 ? "+" : ""}{fmt(totalPnL)}
           </div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Total Fees</div>
-          <div className="text-xl sm:text-2xl font-bold text-foreground">{fmt(totalFees)}</div>
+          <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Total Fees</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">{fmt(totalFees)}</div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Avg Hold Time</div>
-          <div className="text-xl sm:text-2xl font-bold text-foreground">{avgHoldTime}</div>
+          <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Avg Hold Time</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">{avgHoldTime}</div>
         </div>
       </div>
 
@@ -198,22 +189,22 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border hover:bg-transparent">
-                <TableHead className="text-xs font-semibold text-muted-foreground">DATE</TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">TYPE</TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground">COIN</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-muted-foreground">QUANTITY</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-muted-foreground">BUY PRICE</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">SELL PRICE</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">FEE</TableHead>
-                <TableHead className="text-right text-xs font-semibold text-muted-foreground">P&L</TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground hidden lg:table-cell">EMOTION</TableHead>
-                <TableHead className="text-xs font-semibold text-muted-foreground hidden xl:table-cell">NOTES</TableHead>
+                <TableHead className="text-left text-xs sm:text-sm font-semibold text-muted-foreground">DATE</TableHead>
+                <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground">TYPE</TableHead>
+                <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground">COIN</TableHead>
+                <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground">QUANTITY</TableHead>
+                <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground">BUY PRICE</TableHead>
+                <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground hidden sm:table-cell">SELL PRICE</TableHead>
+                <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground hidden md:table-cell">FEE</TableHead>
+                <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground">P&L</TableHead>
+                <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground hidden lg:table-cell">EMOTION</TableHead>
+                <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground hidden xl:table-cell">NOTES</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedTrades.map((trade) => (
                 <TableRow key={trade.id} className="border-b border-border hover:bg-muted/50">
-                  <TableCell className="text-sm font-medium text-foreground">{trade.date}</TableCell>
+                  <TableCell className="text-xs sm:text-sm font-medium text-foreground">{trade.date}</TableCell>
                   <TableCell>
                     <Badge variant={trade.type === "BUY" ? "secondary" : "default"} className="text-xs">
                       {trade.type}
@@ -228,20 +219,20 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
                         {trade.ticker[0]}
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-foreground">{trade.ticker}</div>
+                        <div className="text-xs sm:text-sm font-medium text-foreground">{trade.ticker}</div>
                         <div className="text-xs text-muted-foreground hidden sm:block">{trade.coin}</div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right text-sm font-mono text-foreground">{trade.quantity}</TableCell>
-                  <TableCell className="text-right text-sm font-mono text-foreground">{fmtDec(trade.buyPrice)}</TableCell>
-                  <TableCell className="text-right text-sm font-mono text-foreground hidden sm:table-cell">
+                  <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">{trade.quantity}</TableCell>
+                  <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">{fmtDec(trade.buyPrice)}</TableCell>
+                  <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground hidden sm:table-cell">
                     {trade.sellPrice ? fmtDec(trade.sellPrice) : "—"}
                   </TableCell>
-                  <TableCell className="text-right text-sm font-mono text-muted-foreground hidden md:table-cell">
+                  <TableCell className="text-right text-xs sm:text-sm font-mono text-muted-foreground hidden md:table-cell">
                     {fmtDec(trade.fee)}
                   </TableCell>
-                  <TableCell className="text-right text-sm font-mono">
+                  <TableCell className="text-right text-xs sm:text-sm font-mono">
                     {trade.pnl !== undefined ? (
                       <span style={{ color: trade.pnl >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}>
                         {trade.pnl >= 0 ? "+" : ""}{fmt(trade.pnl)}
@@ -269,7 +260,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs sm:text-sm text-muted-foreground">
           Showing {startIdx + 1}–{Math.min(startIdx + itemsPerPage, filtered.length)} of {filtered.length} trades
         </div>
         <div className="flex items-center gap-2">
@@ -278,6 +269,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
             size="icon"
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
+            className="h-8 w-8 sm:h-10 sm:w-10"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -290,7 +282,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
                   variant={currentPage === pageNum ? "default" : "outline"}
                   size="sm"
                   onClick={() => setCurrentPage(pageNum)}
-                  className="w-8 h-8 p-0"
+                  className="w-8 h-8 p-0 text-xs"
                 >
                   {pageNum}
                 </Button>
@@ -302,6 +294,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
             size="icon"
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
+            className="h-8 w-8 sm:h-10 sm:w-10"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
