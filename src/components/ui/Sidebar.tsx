@@ -25,7 +25,7 @@ const navItems = [
   { href: '/pnl-analysis', label: 'P&L Analysis', Icon: PnLIcon },
   { href: '/emotionjournal', label: 'Emotion Journal', Icon: EmotionIcon },
   { href: '/monthlyreport', label: 'Monthly Report', Icon: ReportIcon },
-  { href: '/feedback', label: 'AI Feedback', Icon: AIFeedbackIcon },
+  { href: '/aifeedback', label: 'AI Feedback', Icon: AIFeedbackIcon },
 ];
 
 export default function Sidebar() {
