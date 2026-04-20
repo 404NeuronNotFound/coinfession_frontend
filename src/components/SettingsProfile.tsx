@@ -1,0 +1,64 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/authStore";
+import { useThemeStore } from "@/stores/themeStore";
+import { Button } from "@/components/ui/button";
+import { SettingsTabs } from "@/components/ui/SettingsTabs";
+import ProfileTab from "@/components/ui/ProfileTab";
+
+export default function SettingsProfile() {
+  const router = useRouter();
+  const theme = useThemeStore((state) => state.theme);
+  const d = theme === "dark";
+  const { isAuthenticated } = useAuthStore();
+  const [activeTab, setActiveTab] = useState("profile");
+
+  useEffect(() => {
+    if (!isAuthenticated) router.replace("/login");
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) return null;
+
+  return (
+    <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24 font-sans">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-1">
+            Settings
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Manage your account and preferences
+          </p>
+        </div>
+
+        {/* Settings Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+          {/* Sidebar Tabs */}
+          <div className={`lg:col-span-1 rounded-lg border ${d ? "bg-muted/50 border-border" : "bg-slate-50 border-slate-200"}`}>
+            <SettingsTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+
+          {/* Content Area */}
+          <div className="lg:col-span-3">
+            {activeTab === "profile" && <ProfileTab />}
+            {activeTab === "security" && (
+              <div className={`rounded-lg border p-6 sm:p-8 ${d ? "bg-background border-border" : "bg-white border-slate-200"}`}>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Security</h2>
+                <p className="text-sm text-muted-foreground">Security settings coming soon</p>
+              </div>
+            )}
+            {activeTab === "preferences" && (
+              <div className={`rounded-lg border p-6 sm:p-8 ${d ? "bg-background border-border" : "bg-white border-slate-200"}`}>
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Preferences</h2>
+                <p className="text-sm text-muted-foreground">Preferences settings coming soon</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
