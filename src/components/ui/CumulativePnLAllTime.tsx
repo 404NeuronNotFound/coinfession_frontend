@@ -1,5 +1,7 @@
 'use client';
 
+import { useThemeStore } from '@/stores/themeStore';
+
 interface DataPoint {
   month: string;
   pnl: number;
@@ -10,6 +12,9 @@ interface CumulativePnLAllTimeProps {
 }
 
 export default function CumulativePnLAllTime({ data }: CumulativePnLAllTimeProps) {
+  const theme = useThemeStore((state) => state.theme);
+  const isDark = theme === 'dark';
+
   const maxPnL = Math.max(...data.map(d => d.pnl));
   const minPnL = 0;
   const range = maxPnL - minPnL;
@@ -21,6 +26,9 @@ export default function CumulativePnLAllTime({ data }: CumulativePnLAllTimeProps
   });
 
   const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const gridColor = isDark ? '#4b5563' : '#e5e7eb';
+  const lineColor = isDark ? '#10b981' : '#3b82f6';
+  const areaColor = isDark ? '#10b981' : '#3b82f6';
 
   return (
     <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
@@ -40,25 +48,24 @@ export default function CumulativePnLAllTime({ data }: CumulativePnLAllTimeProps
                 y1={y}
                 x2="100"
                 y2={y}
-                stroke="currentColor"
+                stroke={gridColor}
                 strokeWidth="0.5"
-                opacity="0.1"
               />
             ))}
 
             {/* Area under curve */}
             <path
               d={`${pathData} L 100 100 L 0 100 Z`}
-              fill="hsl(var(--primary))"
-              opacity="0.1"
+              fill={areaColor}
+              opacity={isDark ? "0.2" : "0.1"}
             />
 
             {/* Line */}
             <path
               d={pathData}
               fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth="2"
+              stroke={lineColor}
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -69,8 +76,8 @@ export default function CumulativePnLAllTime({ data }: CumulativePnLAllTimeProps
                 key={`point-${i}`}
                 cx={p.x}
                 cy={p.y}
-                r="2"
-                fill="hsl(var(--primary))"
+                r="2.5"
+                fill={lineColor}
               />
             ))}
           </svg>
@@ -78,7 +85,7 @@ export default function CumulativePnLAllTime({ data }: CumulativePnLAllTimeProps
 
         {/* Legend */}
         <div className="flex items-center gap-2 text-xs sm:text-sm">
-          <div className="w-3 h-3 rounded-full bg-primary" />
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColor }} />
           <span className="text-muted-foreground">Cumulative P&L</span>
         </div>
       </div>
