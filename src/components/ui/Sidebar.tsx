@@ -24,7 +24,7 @@ const navItems = [
   { href: '/portfolio', label: 'Portfolio', Icon: PortfolioIcon },
   { href: '/pnl-analysis', label: 'P&L Analysis', Icon: PnLIcon },
   { href: '/emotionjournal', label: 'Emotion Journal', Icon: EmotionIcon },
-  { href: '/reports', label: 'Monthly Report', Icon: ReportIcon },
+  { href: '/monthlyreport', label: 'Monthly Report', Icon: ReportIcon },
   { href: '/feedback', label: 'AI Feedback', Icon: AIFeedbackIcon },
 ];
 
