@@ -7,13 +7,14 @@ import { useThemeStore } from "@/stores/themeStore";
 import { SettingsTabs } from "@/components/ui/SettingsTabs";
 import ProfileTab from "@/components/ui/ProfileTab";
 import SecurityTab from "@/components/ui/SecurityTab";
+import APIKeysTab from "@/components/ui/APIKeysTab";
 
-export default function SettingsProfile() {
+export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab?: string }) {
   const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const d = theme === "dark";
   const { isAuthenticated } = useAuthStore();
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   useEffect(() => {
     if (!isAuthenticated) router.replace("/login");
@@ -46,6 +47,7 @@ export default function SettingsProfile() {
           <div className="lg:col-span-3">
             {activeTab === "profile" && <ProfileTab />}
             {activeTab === "security" && <SecurityTab />}
+            {activeTab === "apikeys" && <APIKeysTab />}
             {activeTab === "preferences" && (
               <div className={`rounded-lg border p-6 sm:p-8 ${d ? "bg-background border-border" : "bg-white border-slate-200"}`}>
                 <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Preferences</h2>
