@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import StatGrid from "@/components/ui/StatGrid";
 import EmotionBreakdown from "@/components/ui/EmotionBreakdown";
@@ -100,12 +101,26 @@ export default function DashboardPage() {
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24">
         {/* Header */}
-        <DashboardHeader
-          title="Dashboard"
-          subtitle="Live prices · April 2026"
-          onLogTrade={() => console.log("Log trade")}
-          onExport={() => console.log("Export")}
-        />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-1">
+              Dashboard
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500" />
+              Live prices · April 2026
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => console.log("Refresh")} size="sm" className="text-xs sm:text-sm">
+              Refresh
+            </Button>
+            <Button onClick={() => console.log("Log trade")} size="sm" className="text-xs sm:text-sm">
+              + Log Trade
+            </Button>
+          </div>
+        </div>
 
         {/* Stats Grid */}
         <section className="mb-6 sm:mb-8">

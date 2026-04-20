@@ -46,7 +46,17 @@ const MOCK_PATTERN_INSIGHTS = [
   },
 ];
 
-const MOCK_TRADES = [
+const MOCK_TRADES: Array<{
+  id: number;
+  date: string;
+  type: "BUY" | "SELL";
+  coin: string;
+  ticker: string;
+  emotion: string;
+  note: string;
+  pnl: string;
+  color: string;
+}> = [
   { id: 1, date: "Apr 15", type: "BUY", coin: "Bitcoin", ticker: "BTC", emotion: "Disciplined", note: "DCA entry at 200MA", pnl: "Open", color: "#22c55e" },
   { id: 2, date: "Apr 12", type: "SELL", coin: "Ethereum", ticker: "ETH", emotion: "Panic Sold", note: "Sold dip after 3% drop, could have held", pnl: "-$388", color: "#8b5cf6" },
   { id: 3, date: "Apr 10", type: "BUY", coin: "Solana", ticker: "SOL", emotion: "FOMO", note: "Saw it pumping 15% on Twitter", pnl: "Open", color: "#ef4444" },
@@ -78,12 +88,17 @@ export default function EmotionJournal() {
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24 font-sans">
         {/* Header */}
-        <DashboardHeader
-          title="Emotion Journal"
-          subtitle="See how your emotions affect your trading outcomes"
-          onLogTrade={() => console.log("AI pattern analysis")}
-          onExport={() => console.log("Export")}
-        />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-1">
+              Emotion Journal
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500" />
+              See how your emotions affect your trading outcomes
+            </p>
+          </div>
+        </div>
 
         {/* Emotion Stats */}
         <section className="mb-6 sm:mb-8">

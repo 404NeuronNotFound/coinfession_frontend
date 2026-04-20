@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import DashboardHeader from "@/components/ui/DashboardHeader";
 import MonthlyStats from "@/components/ui/MonthlyStats";
 import MonthlyRealizedPnLChart from "@/components/ui/MonthlyRealizedPnLChart";
 import CumulativePnLAllTime from "@/components/ui/CumulativePnLAllTime";

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import PortfolioStats from "@/components/ui/PortfolioStats";
 import AllocationChart from "@/components/ui/AllocationChart";
@@ -142,12 +143,23 @@ export default function Portfolio() {
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24 font-sans">
         {/* Header */}
-        <DashboardHeader
-          title="Portfolio"
-          subtitle="Live prices via CoinGecko · updated 2 min ago"
-          onLogTrade={() => console.log("Refresh prices")}
-          onExport={() => console.log("AI analysis")}
-        />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mb-1">
+              Portfolio
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500" />
+              Live prices via CoinGecko · updated 2 min ago
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" onClick={() => console.log("Refresh prices")} size="sm" className="text-xs sm:text-sm">
+              Refresh
+            </Button>
+          </div>
+        </div>
 
         {/* Stats */}
         <section className="mb-6 sm:mb-8">
