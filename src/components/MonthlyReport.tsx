@@ -172,9 +172,6 @@ export default function MonthlyReport() {
                 {month}
               </Button>
             ))}
-            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-              Export P
-            </Button>
           </div>
         </div>
 
