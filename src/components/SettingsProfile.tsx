@@ -9,6 +9,8 @@ import ProfileTab from "@/components/ui/ProfileTab";
 import SecurityTab from "@/components/ui/SecurityTab";
 import APIKeysTab from "@/components/ui/APIKeysTab";
 import CoinGeckoTab from "@/components/ui/CoinGeckoTab";
+import EmotionTagsTab from "@/components/ui/EmotionTagsTab";
+import PreferencesTab from "@/components/ui/PreferencesTab";
 
 export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab?: string }) {
   const router = useRouter();
@@ -50,12 +52,8 @@ export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab
             {activeTab === "security" && <SecurityTab />}
             {activeTab === "apikeys" && <APIKeysTab />}
             {activeTab === "coingecko" && <CoinGeckoTab />}
-            {activeTab === "preferences" && (
-              <div className={`rounded-lg border p-6 sm:p-8 ${d ? "bg-background border-border" : "bg-white border-slate-200"}`}>
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Preferences</h2>
-                <p className="text-sm text-muted-foreground">Preferences settings coming soon</p>
-              </div>
-            )}
+            {activeTab === "emotions" && <EmotionTagsTab />}
+            {activeTab === "preferences" && <PreferencesTab />}
           </div>
         </div>
       </div>
