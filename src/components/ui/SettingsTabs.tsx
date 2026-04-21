@@ -23,7 +23,7 @@ const tabs = [
   },
   {
     id: "apikeys",
-    label: "API keys",
+    label: "API Keys",
     icon: Key,
     category: "INTEGRATIONS",
   },
@@ -35,7 +35,7 @@ const tabs = [
   },
   {
     id: "emotions",
-    label: "Emotion tags",
+    label: "Emotion Tags",
     icon: Sliders,
     category: "JOURNAL",
   },
@@ -47,7 +47,7 @@ const tabs = [
   },
   {
     id: "export",
-    label: "Export & import",
+    label: "Export & Import",
     icon: Download,
     category: "DATA",
   },
