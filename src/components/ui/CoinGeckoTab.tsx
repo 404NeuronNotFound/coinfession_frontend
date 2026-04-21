@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useThemeStore } from "@/stores/themeStore";
 import { Button } from "./button";
-import { Activity, RefreshCw, Zap } from "lucide-react";
+import { Activity, RefreshCw } from "lucide-react";
 
 interface SyncHistory {
   date: string;

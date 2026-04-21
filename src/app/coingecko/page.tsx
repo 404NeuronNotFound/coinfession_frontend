@@ -1,5 +1,10 @@
 import SettingsProfile from "@/components/SettingsProfile";
+import UserLayout from "@/layouts/UserLayout";
 
 export default function CoinGeckoPage() {
-  return <SettingsProfile defaultTab="coingecko" />;
+  return (
+    <UserLayout>
+      <SettingsProfile defaultTab="coingecko" />
+    </UserLayout>
+  );
 }
