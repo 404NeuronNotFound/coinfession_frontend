@@ -150,9 +150,10 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
           </select>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Input type="date" className="h-10 w-32 text-sm" />
-          <Input type="date" className="h-10 w-32 text-sm" />
+        <div className="flex flex-wrap gap-2 items-center">
+          <Input type="date" className="h-10 w-40 text-sm [color-scheme:light]" />
+          <span className="text-sm font-medium text-muted-foreground">to</span>
+          <Input type="date" className="h-10 w-40 text-sm [color-scheme:light]" />
           <Button variant="outline" size="sm" className="text-xs sm:text-sm">Clear</Button>
         </div>
       </div>
