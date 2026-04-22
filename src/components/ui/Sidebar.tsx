@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useThemeStore } from '@/stores/themeStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from './button';
-import { Moon, Sun, X } from 'lucide-react';
+import { Moon, Sun, X, Settings } from 'lucide-react';
 import {
   DashboardIcon,
   TradeLogIcon,
@@ -15,7 +15,6 @@ import {
   EmotionIcon,
   ReportIcon,
   AIFeedbackIcon,
-  GearIcon,
 } from './Icons';
 
 const navItems = [
@@ -142,7 +141,7 @@ export default function Sidebar() {
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
-            <GearIcon />
+            <Settings className="w-5 h-5" />
             <span>Settings</span>
           </Link>
 
