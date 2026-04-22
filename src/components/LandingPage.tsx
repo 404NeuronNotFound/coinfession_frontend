@@ -7,7 +7,7 @@ import Footer from "@/components/ui/Footer";
 import {
   ChartIcon,
   ShieldIcon,
-  BrainIcon,
+  WinRateIcon,
   TrendingUpIcon,
   SmileFaceLargeIcon,
   RobotHeadLargeIcon,
@@ -87,7 +87,7 @@ const FEATURES = [
   { Icon: ShieldIcon, title: "Trade Log", desc: "Log every buy and sell — coin, price, amount, date. Clean, fast, no friction." },
   { Icon: ChartIcon, title: "Real P&L Tracking", desc: "Auto-calculate realized and unrealized profit and loss per trade and per coin." },
   { Icon: TrendingUpIcon, title: "Portfolio Overview", desc: "See all your current holdings in one view with live prices from CoinGecko." },
-  { Icon: BrainIcon, title: "Win Rate Tracker", desc: "Know your actual win percentage. Not vibes. Not guesses. Your real numbers." },
+  { Icon: WinRateIcon, title: "Win Rate Tracker", desc: "Know your actual win percentage. Not vibes. Not guesses. Your real numbers." },
   { Icon: SmileFaceLargeIcon, title: "Emotion Log", desc: "Tag each trade — FOMO, Disciplined, Panic Sold, Greedy, Patient. Spot your patterns over time." },
   { Icon: RobotHeadLargeIcon, title: "AI Feedback", desc: "Claude reads your journal and tells you exactly what your patterns say about you. No filter." },
 ];
