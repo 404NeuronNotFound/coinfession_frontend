@@ -12,6 +12,7 @@ import CoinGeckoTab from "@/components/ui/CoinGeckoTab";
 import EmotionTagsTab from "@/components/ui/EmotionTagsTab";
 import PreferencesTab from "@/components/ui/PreferencesTab";
 import ExportImportTab from "@/components/ui/ExportImportTab";
+import DangerZoneTab from "@/components/ui/DangerZoneTab";
 
 export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab?: string }) {
   const router = useRouter();
@@ -56,6 +57,7 @@ export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab
             {activeTab === "emotions" && <EmotionTagsTab />}
             {activeTab === "preferences" && <PreferencesTab />}
             {activeTab === "export" && <ExportImportTab />}
+            {activeTab === "danger" && <DangerZoneTab />}
           </div>
         </div>
       </div>
