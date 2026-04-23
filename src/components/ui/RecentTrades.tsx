@@ -2,6 +2,7 @@
 
 import { Badge } from './badge';
 import EmotionBadge from './EmotionBadge';
+import { EmotionTag } from '@/types/trade';
 
 interface TradeItem {
   id: string | number;
@@ -10,7 +11,7 @@ interface TradeItem {
   ticker: string;
   price: number;
   quantity: number;
-  emotion: string;
+  emotion: EmotionTag;
   date: string;
 }
 
