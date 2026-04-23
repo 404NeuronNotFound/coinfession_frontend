@@ -67,3 +67,17 @@ export interface ApiError {
   /** Raw HTTP status code */
   status?:       number;
 }
+
+// ─── Change password ──────────────────────────────────────
+/** Body sent to POST /api/user/change-password/ */
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+/** Response from POST /api/user/change-password/ */
+export interface ChangePasswordResponse {
+  message: string;
+  status: string;
+}

@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useThemeStore } from "@/stores/themeStore";
+import { useAuthStore } from "@/stores/authStore";
+import { changePassword } from "@/api/auth";
+import { useToast } from "@/hooks/useToast";
+import { Toast } from "@/components/ui/Toast";
 import { Button } from "./button";
 import { Monitor, Smartphone, Eye, EyeOff } from "lucide-react";
 
@@ -68,6 +72,8 @@ const MOCK_TOKENS: Token[] = [
 export default function SecurityTab() {
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === "dark";
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { toast, showToast, hideToast } = useToast();
 
   const [passwordForm, setPasswordForm] = useState({
     current: "",
@@ -81,6 +87,8 @@ export default function SecurityTab() {
     confirm: false,
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordForm((prev) => ({ ...prev, [name]: value }));
@@ -90,8 +98,50 @@ export default function SecurityTab() {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  const handleUpdatePassword = () => {
-    console.log("Updating password:", passwordForm);
+  const handleUpdatePassword = async () => {
+    // Validation
+    if (!passwordForm.current.trim()) {
+      showToast("Current password is required", "error", 3000);
+      return;
+    }
+
+    if (!passwordForm.new.trim()) {
+      showToast("New password is required", "error", 3000);
+      return;
+    }
+
+    if (!passwordForm.confirm.trim()) {
+      showToast("Password confirmation is required", "error", 3000);
+      return;
+    }
+
+    if (passwordForm.new !== passwordForm.confirm) {
+      showToast("New passwords do not match", "error", 3000);
+      return;
+    }
+
+    if (passwordForm.new.length < 8) {
+      showToast("Password must be at least 8 characters long", "error", 3000);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await changePassword({
+        current_password: passwordForm.current,
+        new_password: passwordForm.new,
+        confirm_password: passwordForm.confirm,
+      });
+
+      showToast(response.message || "Password changed successfully", "success", 3000);
+      setPasswordForm({ current: "", new: "", confirm: "" });
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to change password";
+      showToast(errorMessage, "error", 3000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRevokeSession = (sessionId: string) => {
@@ -112,6 +162,10 @@ export default function SecurityTab() {
 
   return (
     <div className="space-y-6">
+      {toast.isVisible && (
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
+      )}
+
       {/* Change Password Section */}
       <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-background border-border" : "bg-white border-slate-200"}`}>
         <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
@@ -230,8 +284,12 @@ export default function SecurityTab() {
           </div>
         </div>
 
-        <Button onClick={handleUpdatePassword} className="w-full sm:w-auto">
-          Update password
+        <Button 
+          onClick={handleUpdatePassword} 
+          className="w-full sm:w-auto"
+          disabled={isLoading}
+        >
+          {isLoading ? "Updating..." : "Update password"}
         </Button>
       </div>
 

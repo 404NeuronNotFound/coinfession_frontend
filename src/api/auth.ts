@@ -53,3 +53,20 @@ export async function refreshToken(refresh: string): Promise<Pick<TokenPair, "ac
 export async function getMe(token: string): Promise<User> {
   return apiFetch<User>("/api/user/me/", { token });
 }
+
+// ─── Change password ──────────────────────────────────────
+/**
+ * POST /api/user/change-password/
+ * Changes the authenticated user's password.
+ * Requires a valid access token.
+ */
+export async function changePassword(payload: {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}): Promise<{ message: string; status: string }> {
+  return apiFetch<{ message: string; status: string }>("/api/user/change-password/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
