@@ -70,3 +70,56 @@ export async function changePassword(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+// ─── Sessions ─────────────────────────────────────────────
+/**
+ * GET /api/user/sessions/
+ * Get all active sessions for the authenticated user.
+ */
+export async function getActiveSessions(): Promise<any[]> {
+  return apiFetch<any[]>("/api/user/sessions/", {
+    method: "GET",
+  });
+}
+
+/**
+ * POST /api/user/sessions/{session_id}/revoke/
+ * Revoke a specific session.
+ */
+export async function revokeSession(sessionId: number): Promise<{ message: string; status: string }> {
+  return apiFetch<{ message: string; status: string }>(`/api/user/sessions/${sessionId}/revoke/`, {
+    method: "POST",
+  });
+}
+
+/**
+ * POST /api/user/sessions/revoke-all/
+ * Revoke all sessions except the current one.
+ */
+export async function revokeAllSessions(currentDeviceId?: string): Promise<{ message: string; status: string; revoked_count: number }> {
+  return apiFetch<{ message: string; status: string; revoked_count: number }>("/api/user/sessions/revoke-all/", {
+    method: "POST",
+    body: JSON.stringify({ current_device_id: currentDeviceId }),
+  });
+}
+
+// ─── Tokens ───────────────────────────────────────────────
+/**
+ * GET /api/user/tokens/
+ * Get all active refresh tokens for the authenticated user.
+ */
+export async function getRefreshTokens(): Promise<any[]> {
+  return apiFetch<any[]>("/api/user/tokens/", {
+    method: "GET",
+  });
+}
+
+/**
+ * POST /api/user/tokens/{token_id}/revoke/
+ * Revoke a specific refresh token.
+ */
+export async function revokeRefreshToken(tokenId: number): Promise<{ message: string; status: string }> {
+  return apiFetch<{ message: string; status: string }>(`/api/user/tokens/${tokenId}/revoke/`, {
+    method: "POST",
+  });
+}

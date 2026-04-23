@@ -81,3 +81,28 @@ export interface ChangePasswordResponse {
   message: string;
   status: string;
 }
+
+// ─── Sessions ─────────────────────────────────────────────
+/** Session object returned from GET /api/user/sessions/ */
+export interface UserSession {
+  id: number;
+  device_id: string;
+  browser: string;
+  os: string;
+  ip_address: string;
+  location: string;
+  created_at: string;
+  last_active: string;
+  is_current: boolean;
+}
+
+// ─── Tokens ───────────────────────────────────────────────
+/** Refresh token object returned from GET /api/user/tokens/ */
+export interface RefreshTokenInfo {
+  id: number;
+  token_suffix: string;
+  created_at: string;
+  expires_at: string;
+  revoked_at: string | null;
+  last_used: string | null;
+}
