@@ -138,8 +138,14 @@ export default function SecurityTab() {
     setRevokeLoading(-1);
     try {
       const result = await revokeAllSessions();
-      showToast(`${result.revoked_count} session(s) revoked successfully`, "success", 3000);
-      fetchSessions();
+      showToast(`${result.revoked_count} session(s) revoked. Logging out...`, "success", 3000);
+      
+      // Clear auth session and redirect to login
+      setTimeout(() => {
+        const { clearSession } = useAuthStore.getState();
+        clearSession();
+        window.location.href = '/login';
+      }, 1000);
     } catch (error: any) {
       showToast(error?.message || "Failed to revoke sessions", "error", 3000);
     } finally {
