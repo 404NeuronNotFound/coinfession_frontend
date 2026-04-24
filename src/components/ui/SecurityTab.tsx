@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/stores/themeStore";
 import { useAuthStore } from "@/stores/authStore";
-import { changePassword, getActiveSessions, revokeSession, revokeAllSessions, getRefreshTokens, revokeRefreshToken } from "@/api/auth";
+import { changePassword, getActiveSessions, revokeSession, revokeAllSessions } from "@/api/auth";
 import { useToast } from "@/hooks/useToast";
 import { Toast } from "@/components/ui/Toast";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { Button } from "./button";
 import { Monitor, Smartphone, Eye, EyeOff } from "lucide-react";
-import { UserSession, RefreshTokenInfo } from "@/types/auth";
+import { UserSession } from "@/types/auth";
 
 export default function SecurityTab() {
   const router = useRouter();
@@ -33,16 +33,13 @@ export default function SecurityTab() {
 
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [sessions, setSessions] = useState<UserSession[]>([]);
-  const [tokens, setTokens] = useState<RefreshTokenInfo[]>([]);
   const [isSessionsLoading, setIsSessionsLoading] = useState(true);
-  const [isTokensLoading, setIsTokensLoading] = useState(true);
   const [revokeLoading, setRevokeLoading] = useState<number | null>(null);
   const [showRevokeAllConfirm, setShowRevokeAllConfirm] = useState(false);
 
-  // Fetch sessions and tokens on mount
+  // Fetch sessions on mount
   useEffect(() => {
     fetchSessions();
-    fetchTokens();
   }, []);
 
   const fetchSessions = async () => {
@@ -55,19 +52,6 @@ export default function SecurityTab() {
       showToast("Failed to load sessions", "error", 3000);
     } finally {
       setIsSessionsLoading(false);
-    }
-  };
-
-  const fetchTokens = async () => {
-    try {
-      setIsTokensLoading(true);
-      const data = await getRefreshTokens();
-      setTokens(data);
-    } catch (error: any) {
-      console.error("Failed to fetch tokens:", error);
-      showToast("Failed to load tokens", "error", 3000);
-    } finally {
-      setIsTokensLoading(false);
     }
   };
 
@@ -158,19 +142,6 @@ export default function SecurityTab() {
     } finally {
       setRevokeLoading(null);
       setShowRevokeAllConfirm(false);
-    }
-  };
-
-  const handleRevokeToken = async (tokenId: number) => {
-    setRevokeLoading(tokenId);
-    try {
-      await revokeRefreshToken(tokenId);
-      showToast("Token revoked successfully", "success", 3000);
-      fetchTokens();
-    } catch (error: any) {
-      showToast(error?.message || "Failed to revoke token", "error", 3000);
-    } finally {
-      setRevokeLoading(null);
     }
   };
 
@@ -386,7 +357,7 @@ export default function SecurityTab() {
                 className="w-full sm:w-auto"
                 disabled={revokeLoading === -1}
               >
-                {revokeLoading === -1 ? "Revoking..." : "Revoke all other sessions"}
+                {revokeLoading === -1 ? "Revoking..." : "Revoke all sessions & Logout"}
               </Button>
             )}
           </>
@@ -397,80 +368,14 @@ export default function SecurityTab() {
       <ConfirmationModal
         isOpen={showRevokeAllConfirm}
         title="Revoke all sessions?"
-        description="This will log you out from all other devices. You'll need to log in again on those devices. This action cannot be undone."
-        confirmText="Revoke all"
+        description="This will log you out from all devices including this one. You'll need to log in again. This action cannot be undone."
+        confirmText="Revoke all & Logout"
         cancelText="Cancel"
         isDangerous={true}
         isLoading={revokeLoading === -1}
         onConfirm={handleRevokeAllSessions}
         onCancel={() => setShowRevokeAllConfirm(false)}
       />
-
-      {/* JWT Tokens Section */}
-      <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-background border-border" : "bg-white border-slate-200"}`}>
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
-          JWT Tokens
-        </h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mb-6">
-          Your active refresh tokens. These are created when you log in and used to issue new access tokens. Revoking a token logs out that session immediately. Access tokens expire every <span className="font-semibold">60 minutes</span> — refresh tokens expire after <span className="font-semibold">7 days</span>.
-        </p>
-
-        {isTokensLoading ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading tokens...</p>
-          </div>
-        ) : tokens.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No active tokens</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {tokens.map((token) => (
-              <div
-                key={token.id}
-                className={`rounded-lg p-4 sm:p-5 border ${
-                  isDark ? "bg-muted/50 border-border" : "bg-slate-50 border-slate-200"
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${token.revoked_at ? 'bg-red-500' : 'bg-green-500'}`} />
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-foreground">
-                        Token {token.token_suffix}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Issued {new Date(token.created_at).toLocaleDateString()} · expires {new Date(token.expires_at).toLocaleDateString()}
-                      </p>
-                      {token.last_used && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Last used {new Date(token.last_used).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {!token.revoked_at && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRevokeToken(token.id)}
-                      className="whitespace-nowrap"
-                      disabled={revokeLoading === token.id}
-                    >
-                      {revokeLoading === token.id ? "Revoking..." : "Revoke"}
-                    </Button>
-                  )}
-                  {token.revoked_at && (
-                    <span className="inline-block px-3 py-1 rounded text-xs font-medium bg-red-100 text-red-700 whitespace-nowrap">
-                      revoked
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
