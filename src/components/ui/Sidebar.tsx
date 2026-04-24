@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useThemeStore } from '@/stores/themeStore';
 import { useAuthStore } from '@/stores/authStore';
+import { ConfirmationModal } from './ConfirmationModal';
 import { Button } from './button';
 import { Moon, Sun, X, Settings } from 'lucide-react';
 import {
@@ -28,6 +29,7 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+  const router = useRouter();
   const pathname = usePathname();
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
@@ -35,10 +37,13 @@ export default function Sidebar() {
   const user = useAuthStore((state) => state.user);
   const clearSession = useAuthStore((state) => state.clearSession);
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
     clearSession();
-    window.location.href = '/login';
+    localStorage.clear();
+    router.push('/login');
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -169,7 +174,7 @@ export default function Sidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full justify-start gap-3 px-4 text-destructive hover:text-destructive"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -181,6 +186,18 @@ export default function Sidebar() {
           </Button>
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showLogoutConfirm}
+        title="Logout?"
+        description="You will be logged out and redirected to the login page."
+        confirmText="Logout"
+        cancelText="Cancel"
+        isDangerous={true}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </>
   );
 }
