@@ -1,19 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useThemeStore } from "@/stores/themeStore";
 import { useAuthStore } from "@/stores/authStore";
 import { changePassword, getActiveSessions, revokeSession, revokeAllSessions, getRefreshTokens, revokeRefreshToken } from "@/api/auth";
 import { useToast } from "@/hooks/useToast";
 import { Toast } from "@/components/ui/Toast";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { Button } from "./button";
 import { Monitor, Smartphone, Eye, EyeOff } from "lucide-react";
 import { UserSession, RefreshTokenInfo } from "@/types/auth";
 
 export default function SecurityTab() {
+  const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === "dark";
   const { toast, showToast, hideToast } = useToast();
+  const clearSession = useAuthStore((state) => state.clearSession);
 
   const [passwordForm, setPasswordForm] = useState({
     current: "",
@@ -33,6 +37,7 @@ export default function SecurityTab() {
   const [isSessionsLoading, setIsSessionsLoading] = useState(true);
   const [isTokensLoading, setIsTokensLoading] = useState(true);
   const [revokeLoading, setRevokeLoading] = useState<number | null>(null);
+  const [showRevokeAllConfirm, setShowRevokeAllConfirm] = useState(false);
 
   // Fetch sessions and tokens on mount
   useEffect(() => {
@@ -140,16 +145,19 @@ export default function SecurityTab() {
       const result = await revokeAllSessions();
       showToast(`${result.revoked_count} session(s) revoked. Logging out...`, "success", 3000);
       
-      // Clear auth session and redirect to login
-      setTimeout(() => {
-        const { clearSession } = useAuthStore.getState();
-        clearSession();
-        window.location.href = '/login';
-      }, 1000);
+      // Clear auth session immediately
+      clearSession();
+      
+      // Clear localStorage
+      localStorage.clear();
+      
+      // Redirect to login
+      router.push('/login');
     } catch (error: any) {
       showToast(error?.message || "Failed to revoke sessions", "error", 3000);
     } finally {
       setRevokeLoading(null);
+      setShowRevokeAllConfirm(false);
     }
   };
 
@@ -374,7 +382,7 @@ export default function SecurityTab() {
             {sessions.length > 1 && (
               <Button
                 variant="outline"
-                onClick={handleRevokeAllSessions}
+                onClick={() => setShowRevokeAllConfirm(true)}
                 className="w-full sm:w-auto"
                 disabled={revokeLoading === -1}
               >
@@ -384,6 +392,19 @@ export default function SecurityTab() {
           </>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showRevokeAllConfirm}
+        title="Revoke all sessions?"
+        description="This will log you out from all other devices. You'll need to log in again on those devices. This action cannot be undone."
+        confirmText="Revoke all"
+        cancelText="Cancel"
+        isDangerous={true}
+        isLoading={revokeLoading === -1}
+        onConfirm={handleRevokeAllSessions}
+        onCancel={() => setShowRevokeAllConfirm(false)}
+      />
 
       {/* JWT Tokens Section */}
       <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-background border-border" : "bg-white border-slate-200"}`}>
