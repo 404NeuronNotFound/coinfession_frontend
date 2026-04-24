@@ -1,94 +1,103 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
 import DashboardHeader from "@/components/ui/DashboardHeader";
-
-interface Trade {
-  id: number;
-  date: string;
-  type: "BUY" | "SELL";
-  coin: string;
-  ticker: string;
-  quantity: number;
-  buyPrice: number;
-  sellPrice?: number;
-  fee: number;
-  pnl?: number;
-  pnlPct?: number;
-  emotion?: string;
-  notes?: string;
-  color: string;
-}
+import { LogTradeDrawer } from "@/components/ui/LogTradeDrawer";
+import { useTradeStore } from "@/stores/tradeStore";
+import { exportTradesCsv } from "@/api/tradeApi";
 
 interface TradeLogProps {
-  trades?: Trade[];
   onLogTrade?: () => void;
   onExport?: () => void;
 }
 
-const MOCK_TRADES: Trade[] = [
-  { id: 1, date: "04-15", type: "BUY", coin: "Bitcoin", ticker: "BTC", quantity: 0.05, buyPrice: 61800, fee: 12.36, emotion: "Disciplined", notes: "Strong support level", color: "#F7931A" },
-  { id: 2, date: "04-12", type: "SELL", coin: "Ethereum", ticker: "ETH", quantity: 1, buyPrice: 2800, sellPrice: 2420, fee: 9.68, pnl: 388, pnlPct: 13.8, emotion: "Panic Sold", notes: "Sold too early", color: "#627EEA" },
-  { id: 3, date: "04-10", type: "BUY", coin: "Avalanche", ticker: "AVAX", quantity: 10, buyPrice: 35.4, fee: 3.54, emotion: "FOMO", notes: "Chased pump", color: "#E84142" },
-  { id: 4, date: "04-05", type: "SELL", coin: "Bitcoin", ticker: "BTC", quantity: 0.1, buyPrice: 55000, sellPrice: 63200, fee: 18.96, pnl: 880, pnlPct: 14.9, emotion: "Disciplined", notes: "Hit target", color: "#F7931A" },
-  { id: 5, date: "03-28", type: "BUY", coin: "Solana", ticker: "SOL", quantity: 5, buyPrice: 142, fee: 7.10, emotion: "Patient", notes: "Waiting for dip", color: "#9945FF" },
-  { id: 6, date: "03-20", type: "SELL", coin: "Solana", ticker: "SOL", quantity: 3, buyPrice: 142, sellPrice: 168, fee: 6.30, pnl: 71, pnlPct: 18.3, emotion: "Disciplined", notes: "Partial profit", color: "#9945FF" },
-  { id: 7, date: "03-15", type: "BUY", coin: "Ethereum", ticker: "ETH", quantity: 2, buyPrice: 2750, fee: 11.00, emotion: "Patient", notes: "DCA strategy", color: "#627EEA" },
-  { id: 8, date: "03-10", type: "SELL", coin: "Avalanche", ticker: "AVAX", quantity: 15, buyPrice: 28, sellPrice: 22, fee: 4.95, pnl: -94.5, pnlPct: -21.4, emotion: "Panic Sold", notes: "Cut losses", color: "#E84142" },
-  { id: 9, date: "03-05", type: "BUY", coin: "Bitcoin", ticker: "BTC", quantity: 0.08, buyPrice: 58200, fee: 14.00, emotion: "Disciplined", notes: "Accumulating", color: "#F7931A" },
-  { id: 10, date: "02-28", type: "SELL", coin: "Ethereum", ticker: "ETH", quantity: 1.5, buyPrice: 2600, sellPrice: 2940, fee: 13.23, pnl: 498, pnlPct: 13.1, emotion: "Disciplined", notes: "Rebalancing", color: "#627EEA" },
-];
+export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
+  const {
+    trades,
+    summary,
+    emotionTags,
+    filters,
+    pagination,
+    loading,
+    loadTrades,
+    loadEmotionTags,
+    updateFilter,
+    clearFilters,
+    setPage,
+    openDrawer,
+    deleteTrade,
+  } = useTradeStore();
 
-export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }: TradeLogProps) {
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"ALL" | "BUY" | "SELL">("ALL");
-  const [filterEmotion, setFilterEmotion] = useState("ALL");
-  const [filterPnL, setFilterPnL] = useState("ALL");
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const itemsPerPage = 10;
+  // Load data on mount
+  useEffect(() => {
+    loadTrades();
+    loadEmotionTags();
+  }, []);
 
-  // Filter trades
-  const filtered = trades.filter(t => {
-    const matchesSearch = t.coin.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         t.ticker.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "ALL" || t.type === filterType;
-    const matchesEmotion = filterEmotion === "ALL" || t.emotion === filterEmotion;
-    const matchesPnL = filterPnL === "ALL" || 
-                      (filterPnL === "PROFIT" && (t.pnl ?? 0) > 0) ||
-                      (filterPnL === "LOSS" && (t.pnl ?? 0) < 0);
+  // Debounced search
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
     
-    return matchesSearch && matchesType && matchesEmotion && matchesPnL;
-  });
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    const timeout = setTimeout(() => {
+      updateFilter("search", value);
+    }, 300);
+    
+    setSearchTimeout(timeout);
+  }, [searchTimeout, updateFilter]);
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const paginatedTrades = filtered.slice(startIdx, startIdx + itemsPerPage);
+  // Handle export
+  const handleExport = () => {
+    exportTradesCsv();
+    if (onExport) onExport();
+  };
 
-  // Calculate stats
-  const totalTrades = trades.length;
-  const closedTrades = trades.filter(t => t.type === "SELL");
-  const winRate = closedTrades.length ? Math.round((closedTrades.filter(t => (t.pnl ?? 0) > 0).length / closedTrades.length) * 100) : 0;
-  const totalPnL = trades.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
-  const totalFees = trades.reduce((sum, t) => sum + t.fee, 0);
-  const avgHoldTime = "12d";
+  // Handle log trade
+  const handleLogTrade = () => {
+    openDrawer();
+    if (onLogTrade) onLogTrade();
+  };
 
-  const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
-  const fmtDec = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  // Format currency
+  const fmt = (n: number) => new Intl.NumberFormat("en-US", { 
+    style: "currency", 
+    currency: "USD", 
+    maximumFractionDigits: 0 
+  }).format(n);
+  
+  const fmtDec = (n: number) => new Intl.NumberFormat("en-US", { 
+    style: "currency", 
+    currency: "USD", 
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2 
+  }).format(n);
+
+  // Calculate pagination display
+  const startIdx = ((filters.page || 1) - 1) * (filters.page_size || 10);
+  const endIdx = Math.min(startIdx + (filters.page_size || 10), pagination.count);
+  const totalPages = Math.ceil(pagination.count / (filters.page_size || 10));
+  const currentPage = filters.page || 1;
 
   return (
-    <div className="w-full space-y-6 font-sans">
-      {/* Header */}
-      <DashboardHeader
+    <>
+      <LogTradeDrawer />
+      
+      <div className="w-full space-y-6 font-sans">
+        {/* Header */}
+        <DashboardHeader
         title="Trade Log"
         subtitle="Complete trade history · April 2026"
-        onLogTrade={onLogTrade}
-        onExport={onExport}
+        onLogTrade={handleLogTrade}
+        onExport={handleExport}
       />
 
       {/* Filters */}
@@ -98,10 +107,7 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
             <Input
               placeholder="Search coin"
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="h-10 text-sm"
             />
           </div>
@@ -109,52 +115,61 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <select
-            value={filterType}
-            onChange={(e) => {
-              setFilterType(e.target.value as "ALL" | "BUY" | "SELL");
-              setCurrentPage(1);
-            }}
+            value={filters.type || ""}
+            onChange={(e) => updateFilter("type", e.target.value)}
             className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
           >
-            <option value="ALL">All types</option>
-            <option value="BUY">Buy</option>
-            <option value="SELL">Sell</option>
+            <option value="">All types</option>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
           </select>
 
           <select
-            value={filterEmotion}
-            onChange={(e) => {
-              setFilterEmotion(e.target.value);
-              setCurrentPage(1);
-            }}
+            value={filters.emotion || ""}
+            onChange={(e) => updateFilter("emotion", e.target.value)}
             className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
           >
-            <option value="ALL">All emotions</option>
-            <option value="Disciplined">Disciplined</option>
-            <option value="FOMO">FOMO</option>
-            <option value="Greedy">Greedy</option>
-            <option value="Panic Sold">Panic Sold</option>
+            <option value="">All emotions</option>
+            {emotionTags.map((tag) => (
+              <option key={tag.id} value={tag.id}>
+                {tag.name}
+              </option>
+            ))}
           </select>
 
           <select
-            value={filterPnL}
-            onChange={(e) => {
-              setFilterPnL(e.target.value);
-              setCurrentPage(1);
-            }}
+            value={filters.pnl || ""}
+            onChange={(e) => updateFilter("pnl", e.target.value)}
             className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
           >
-            <option value="ALL">All P&L</option>
-            <option value="PROFIT">Profit</option>
-            <option value="LOSS">Loss</option>
+            <option value="">All P&L</option>
+            <option value="profit">Profit</option>
+            <option value="loss">Loss</option>
           </select>
         </div>
 
         <div className="flex flex-wrap gap-2 items-center">
-          <Input type="date" className="h-10 w-40 text-sm [color-scheme:light]" />
+          <Input 
+            type="date" 
+            value={filters.date_from || ""}
+            onChange={(e) => updateFilter("date_from", e.target.value)}
+            className="h-10 w-40 text-sm [color-scheme:light]" 
+          />
           <span className="text-sm font-medium text-muted-foreground">to</span>
-          <Input type="date" className="h-10 w-40 text-sm [color-scheme:light]" />
-          <Button variant="outline" size="sm" className="text-xs sm:text-sm">Clear</Button>
+          <Input 
+            type="date" 
+            value={filters.date_to || ""}
+            onChange={(e) => updateFilter("date_to", e.target.value)}
+            className="h-10 w-40 text-sm [color-scheme:light]" 
+          />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs sm:text-sm"
+            onClick={clearFilters}
+          >
+            Clear
+          </Button>
         </div>
       </div>
 
@@ -162,30 +177,36 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Total Trades</div>
-          <div className="text-xl sm:text-2xl font-black text-foreground">{totalTrades}</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">
+            {summary?.total_trades ?? "—"}
+          </div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Win Rate</div>
-          <div className="text-xl sm:text-2xl font-black text-foreground">{winRate}%</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">
+            {summary ? `${summary.win_rate.toFixed(1)}%` : "—"}
+          </div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Realized P&L</div>
-          <div className={`text-xl sm:text-2xl font-black ${totalPnL >= 0 ? "text-green-600" : "text-red-600"}`}>
-            {totalPnL >= 0 ? "+" : ""}{fmt(totalPnL)}
+          <div className={`text-xl sm:text-2xl font-black ${summary && summary.total_realized_pnl >= 0 ? "text-green-600" : "text-red-600"}`}>
+            {summary ? `${summary.total_realized_pnl >= 0 ? "+" : ""}${fmt(summary.total_realized_pnl)}` : "—"}
           </div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Total Fees</div>
-          <div className="text-xl sm:text-2xl font-black text-foreground">{fmt(totalFees)}</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">
+            {summary ? fmt(summary.total_fees) : "—"}
+          </div>
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Avg Hold Time</div>
-          <div className="text-xl sm:text-2xl font-black text-foreground">{avgHoldTime}</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">—</div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border bg-card overflow-hidden">
+      <div className="rounded-lg border border-border bg-card overflow-hidden" style={{ opacity: loading ? 0.6 : 1 }}>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -203,57 +224,75 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedTrades.map((trade) => (
-                <TableRow key={trade.id} className="border-b border-border hover:bg-muted/50">
-                  <TableCell className="text-xs sm:text-sm font-medium text-foreground">{trade.date}</TableCell>
-                  <TableCell>
-                    <Badge variant={trade.type === "BUY" ? "secondary" : "default"} className="text-xs">
-                      {trade.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                        style={{ backgroundColor: trade.color }}
-                      >
-                        {trade.ticker[0]}
-                      </div>
-                      <div>
-                        <div className="text-xs sm:text-sm font-medium text-foreground">{trade.ticker}</div>
-                        <div className="text-xs text-muted-foreground hidden sm:block">{trade.coin}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">{trade.quantity}</TableCell>
-                  <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">{fmtDec(trade.buyPrice)}</TableCell>
-                  <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground hidden sm:table-cell">
-                    {trade.sellPrice ? fmtDec(trade.sellPrice) : "—"}
-                  </TableCell>
-                  <TableCell className="text-right text-xs sm:text-sm font-mono text-muted-foreground hidden md:table-cell">
-                    {fmtDec(trade.fee)}
-                  </TableCell>
-                  <TableCell className="text-right text-xs sm:text-sm font-mono">
-                    {trade.pnl !== undefined ? (
-                      <span style={{ color: trade.pnl >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}>
-                        {trade.pnl >= 0 ? "+" : ""}{fmt(trade.pnl)}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">Open</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-xs hidden lg:table-cell">
-                    {trade.emotion && (
-                      <Badge variant="outline" className="text-xs">
-                        {trade.emotion}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground hidden xl:table-cell max-w-xs truncate">
-                    {trade.notes || "—"}
+              {trades.length === 0 && !loading ? (
+                <TableRow>
+                  <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+                    No trades found. Try adjusting your filters or log your first trade.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                trades.map((trade) => (
+                  <TableRow 
+                    key={trade.id} 
+                    className="border-b border-border hover:bg-muted/50 cursor-pointer"
+                    onClick={() => openDrawer(trade)}
+                  >
+                    <TableCell className="text-xs sm:text-sm font-medium text-foreground">
+                      {new Date(trade.trade_date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={trade.trade_type === "buy" ? "secondary" : "default"} className="text-xs uppercase">
+                        {trade.trade_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                          style={{ backgroundColor: "#3b82f6" }}
+                        >
+                          {trade.coin.symbol[0]}
+                        </div>
+                        <div>
+                          <div className="text-xs sm:text-sm font-medium text-foreground">{trade.coin.symbol}</div>
+                          <div className="text-xs text-muted-foreground hidden sm:block">{trade.coin.name}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">
+                      {trade.quantity}
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">
+                      {trade.buy_price ? fmtDec(trade.buy_price) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground hidden sm:table-cell">
+                      {trade.sell_price ? fmtDec(trade.sell_price) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm font-mono text-muted-foreground hidden md:table-cell">
+                      {fmtDec(trade.fee)}
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm font-mono">
+                      {trade.realized_pnl !== null ? (
+                        <span style={{ color: trade.realized_pnl >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}>
+                          {trade.realized_pnl >= 0 ? "+" : ""}{fmt(trade.realized_pnl)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Open</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">
+                      {trade.emotions.map((emotion) => (
+                        <Badge key={emotion.id} variant="outline" className="text-xs mr-1">
+                          {emotion.emotion_tag.name}
+                        </Badge>
+                      ))}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground hidden xl:table-cell max-w-xs truncate">
+                      {trade.notes || "—"}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -262,14 +301,14 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="text-xs sm:text-sm text-muted-foreground">
-          Showing {startIdx + 1}–{Math.min(startIdx + itemsPerPage, filtered.length)} of {filtered.length} trades
+          Showing {pagination.count > 0 ? startIdx + 1 : 0}–{endIdx} of {pagination.count} trades
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
+            onClick={() => setPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1 || loading}
             className="h-8 w-8 sm:h-10 sm:w-10"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -282,7 +321,8 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
                   key={pageNum}
                   variant={currentPage === pageNum ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setCurrentPage(pageNum)}
+                  onClick={() => setPage(pageNum)}
+                  disabled={loading}
                   className="w-8 h-8 p-0 text-xs"
                 >
                   {pageNum}
@@ -293,8 +333,8 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
+            onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages || loading}
             className="h-8 w-8 sm:h-10 sm:w-10"
           >
             <ChevronRight className="w-4 h-4" />
@@ -302,5 +342,6 @@ export default function TradeLog({ trades = MOCK_TRADES, onLogTrade, onExport }:
         </div>
       </div>
     </div>
+    </>
   );
 }
