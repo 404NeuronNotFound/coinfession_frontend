@@ -13,11 +13,28 @@ import {
 } from "@/types/emotionTag.types";
 
 /**
+ * Get access token from localStorage (Zustand persisted store)
+ */
+function getAccessToken(): string {
+  if (typeof window === "undefined") return "";
+  
+  try {
+    const stored = localStorage.getItem("coinfession-auth");
+    if (!stored) return "";
+    
+    const parsed = JSON.parse(stored);
+    return parsed?.state?.accessToken || "";
+  } catch {
+    return "";
+  }
+}
+
+/**
  * GET /api/emotion-tags/
  * Fetch all emotion tags with statistics
  */
 export async function fetchEmotionTags(): Promise<EmotionTag[]> {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   return apiFetch<EmotionTag[]>("/api/emotion-tags/", {
     method: "GET",
     token: token || undefined,
@@ -31,7 +48,7 @@ export async function fetchEmotionTags(): Promise<EmotionTag[]> {
 export async function createEmotionTag(
   payload: CreateTagPayload
 ): Promise<EmotionTag> {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   return apiFetch<EmotionTag>("/api/emotion-tags/", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -47,7 +64,7 @@ export async function updateEmotionTag(
   id: number,
   payload: UpdateTagPayload
 ): Promise<EmotionTag> {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   return apiFetch<EmotionTag>(`/api/emotion-tags/${id}/`, {
     method: "PATCH",
     body: JSON.stringify(payload),
@@ -60,7 +77,7 @@ export async function updateEmotionTag(
  * Delete an emotion tag
  */
 export async function deleteEmotionTag(id: number): Promise<void> {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   return apiFetch<void>(`/api/emotion-tags/${id}/`, {
     method: "DELETE",
     token: token || undefined,
@@ -72,7 +89,7 @@ export async function deleteEmotionTag(id: number): Promise<void> {
  * Fetch suggested emotion tags (filtered by backend to exclude existing)
  */
 export async function fetchSuggestedTags(): Promise<SuggestedTag[]> {
-  const token = localStorage.getItem("access_token");
+  const token = getAccessToken();
   return apiFetch<SuggestedTag[]>("/api/emotion-tags/suggested/", {
     method: "GET",
     token: token || undefined,
