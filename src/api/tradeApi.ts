@@ -15,7 +15,7 @@ import type {
   UpdateTradePayload,
   CoinSearchResult,
   EmotionTag,
-} from "@/types/trade.types";
+} from "@/types/tradeTypes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -34,11 +34,20 @@ function buildQueryString(params: Record<string, unknown>): string {
 }
 
 /**
- * Get access token from localStorage
+ * Get access token from localStorage (Zustand persisted store)
  */
 function getAccessToken(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("access_token") || "";
+  
+  try {
+    const stored = localStorage.getItem("coinfession-auth");
+    if (!stored) return "";
+    
+    const parsed = JSON.parse(stored);
+    return parsed?.state?.accessToken || "";
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -178,21 +187,55 @@ export async function createCoin(
 
 /**
  * GET /api/trades/export/csv/
- * Trigger CSV download
+ * Download trades as CSV file
  * 
- * Note: Browser file downloads cannot set Authorization headers,
- * so we append the token as a query parameter.
- * Backend must support ?token=<access_token> for this endpoint.
+ * Note: We can't use apiFetch here because it expects JSON responses,
+ * but CSV export returns text/csv. We need to use raw fetch with proper auth.
  */
-export function exportTradesCsv(): void {
+export async function exportTradesCsv(): Promise<void> {
   const token = getAccessToken();
-  const url = `${BASE_URL}/api/trades/export/csv/?token=${encodeURIComponent(token)}`;
   
-  // Trigger download
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "trades.csv";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+  
+  try {
+    const response = await fetch(`${BASE_URL}/api/trades/export/csv/`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      // Try to parse error message
+      let errorMessage = `Export failed: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        // Response is not JSON, use status text
+        errorMessage = `Export failed: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+    
+    // Get the CSV blob
+    const blob = await response.blob();
+    
+    // Create a download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `trades_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Failed to export trades:", error);
+    throw error;
+  }
 }

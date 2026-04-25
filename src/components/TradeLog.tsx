@@ -56,9 +56,14 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
   }, [searchTimeout, updateFilter]);
 
   // Handle export
-  const handleExport = () => {
-    exportTradesCsv();
-    if (onExport) onExport();
+  const handleExport = async () => {
+    try {
+      await exportTradesCsv();
+      if (onExport) onExport();
+    } catch (error) {
+      console.error("Export failed:", error);
+      // You could show a toast notification here
+    }
   };
 
   // Handle log trade
