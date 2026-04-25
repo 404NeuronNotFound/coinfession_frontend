@@ -13,7 +13,7 @@ import type {
   EmotionTag,
   CreateTradePayload,
   UpdateTradePayload,
-} from "@/types/trade.types";
+} from "@/types/tradeTypes";
 import {
   fetchTrades,
   fetchTradeSummary,

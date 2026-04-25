@@ -11,7 +11,7 @@ import {
   CreateTagPayload,
   UpdateTagPayload,
   TagApiError,
-} from "@/types/emotionTag.types";
+} from "@/types/emotionTagTypes";
 import {
   fetchEmotionTags,
   createEmotionTag,

@@ -8,7 +8,7 @@ import { Input } from "./input";
 import { Badge } from "./badge";
 import { X, Search } from "lucide-react";
 import { searchCoins, createCoin } from "@/api/tradeApi";
-import type { CoinSearchResult } from "@/types/trade.types";
+import type { CoinSearchResult } from "@/types/tradeTypes";
 
 export function LogTradeDrawer() {
   const theme = useThemeStore((state) => state.theme);
