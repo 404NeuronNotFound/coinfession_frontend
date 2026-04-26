@@ -60,6 +60,7 @@ export interface TradeSummary {
   win_rate: number;
   total_realized_pnl: number;
   total_fees: number;
+  avg_hold_time_days: number;
 }
 
 export interface PaginatedResponse<T> {

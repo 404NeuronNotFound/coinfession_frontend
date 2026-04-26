@@ -206,7 +206,11 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
         </div>
         <div className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">Avg Hold Time</div>
-          <div className="text-xl sm:text-2xl font-black text-foreground">—</div>
+          <div className="text-xl sm:text-2xl font-black text-foreground">
+            {summary && summary.avg_hold_time_days > 0 
+              ? `${summary.avg_hold_time_days.toFixed(1)}d` 
+              : "—"}
+          </div>
         </div>
       </div>
 

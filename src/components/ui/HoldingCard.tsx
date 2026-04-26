@@ -9,6 +9,10 @@ interface Holding {
   currentPrice: number;
   color: string;
   percentage: number;
+  change24h?: number;
+  unrealizedPnl?: number;
+  unrealizedPnlPct?: number;
+  currentValue?: number;
 }
 
 interface HoldingCardProps {
@@ -23,11 +27,11 @@ const pct = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
 const pos = (n: number) => n >= 0;
 
 export default function HoldingCard({ holding }: HoldingCardProps) {
-  const totalValue = holding.amount * holding.currentPrice;
+  const totalValue = holding.currentValue ?? holding.amount * holding.currentPrice;
   const totalCost = holding.amount * holding.avgBuyPrice;
-  const pnl = totalValue - totalCost;
-  const pnlPct = ((holding.currentPrice - holding.avgBuyPrice) / holding.avgBuyPrice) * 100;
-  const priceChange24h = 2.3; // Mock data
+  const pnl = holding.unrealizedPnl ?? (totalValue - totalCost);
+  const pnlPct = holding.unrealizedPnlPct ?? ((holding.currentPrice - holding.avgBuyPrice) / holding.avgBuyPrice) * 100;
+  const priceChange24h = holding.change24h ?? 0;
 
   return (
     <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
@@ -43,12 +47,12 @@ export default function HoldingCard({ holding }: HoldingCardProps) {
           <div>
             <div className="text-sm sm:text-base font-semibold text-foreground">{holding.coin}</div>
             <div className="text-xs text-muted-foreground">
-              {holding.amount} {holding.ticker} · {holding.percentage}% of portfolio
+              {holding.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })} {holding.ticker} · {holding.percentage.toFixed(1)}% of portfolio
             </div>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-lg sm:text-xl font-black text-foreground">{fmt(totalValue)}</div>
+          <div className="text-lg sm:text-xl font-black text-foreground">{fmtDec(totalValue)}</div>
           <div className={`text-xs sm:text-sm font-semibold ${pos(priceChange24h) ? "text-green-600" : "text-red-600"}`}>
             {pct(priceChange24h)} 24h
           </div>
@@ -78,7 +82,7 @@ export default function HoldingCard({ holding }: HoldingCardProps) {
         </div>
         <div>
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">
-            Current Value
+            Current Price
           </div>
           <div className="text-sm sm:text-base font-semibold text-foreground">{fmtDec(holding.currentPrice)}</div>
         </div>
@@ -90,7 +94,7 @@ export default function HoldingCard({ holding }: HoldingCardProps) {
             className="text-sm sm:text-base font-semibold"
             style={{ color: pos(pnl) ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}
           >
-            {fmt(pnl)}
+            {pct(pnlPct)}
           </div>
         </div>
         <div>
@@ -99,9 +103,9 @@ export default function HoldingCard({ holding }: HoldingCardProps) {
           </div>
           <div
             className="text-sm sm:text-base font-semibold"
-            style={{ color: pos(pnlPct) ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}
+            style={{ color: pos(pnl) ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}
           >
-            {pct(pnlPct)}
+            {fmt(pnl)}
           </div>
         </div>
       </div>
