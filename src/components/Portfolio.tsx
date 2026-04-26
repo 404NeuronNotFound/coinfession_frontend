@@ -10,29 +10,7 @@ import HoldingCard from "@/components/ui/HoldingCard";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { usePortfolioStore } from "@/stores/portfolioStore";
-
-// Color mapping for coins
-const COIN_COLORS: Record<string, string> = {
-  BTC: "#F7931A",
-  ETH: "#627EEA",
-  SOL: "#9945FF",
-  AVAX: "#E84142",
-  USDC: "#2775CA",
-  USDT: "#26A17B",
-  BNB: "#F3BA2F",
-  ADA: "#0033AD",
-  DOT: "#E6007A",
-  MATIC: "#8247E5",
-};
-
-const DEFAULT_COLORS = [
-  "#F7931A", "#627EEA", "#9945FF", "#E84142", "#2775CA",
-  "#26A17B", "#F3BA2F", "#0033AD", "#E6007A", "#8247E5",
-];
-
-const getCoinColor = (symbol: string, index: number): string => {
-  return COIN_COLORS[symbol] || DEFAULT_COLORS[index % DEFAULT_COLORS.length];
-};
+import { getCoinColor } from "@/lib/coinColors";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
@@ -100,15 +78,15 @@ export default function Portfolio() {
   ];
 
   // Transform holdings for AllocationChart
-  const allocationData = holdings.map((h, i) => ({
+  const allocationData = holdings.map((h) => ({
     coin: h.name,
     ticker: h.symbol,
-    color: getCoinColor(h.symbol, i),
+    color: getCoinColor(h.symbol),
     percentage: h.allocation_pct,
   }));
 
   // Transform holdings for CostBasisBreakdown
-  const costBasisData = holdings.map((h, i) => ({
+  const costBasisData = holdings.map((h) => ({
     coin: h.name,
     ticker: h.symbol,
     avgBuyPrice: h.avg_buy_price,
@@ -116,18 +94,18 @@ export default function Portfolio() {
     currentValue: h.current_value,
     pnl: h.unrealized_pnl,
     pnlPct: h.unrealized_pnl_pct,
-    color: getCoinColor(h.symbol, i),
+    color: getCoinColor(h.symbol),
   }));
 
   // Transform holdings for HoldingCard
-  const holdingCards = holdings.map((h, i) => ({
+  const holdingCards = holdings.map((h) => ({
     id: h.coin_id,
     coin: h.name,
     ticker: h.symbol,
     amount: h.total_quantity,
     avgBuyPrice: h.avg_buy_price,
     currentPrice: h.live_price,
-    color: getCoinColor(h.symbol, i),
+    color: getCoinColor(h.symbol),
     percentage: h.allocation_pct,
     change24h: h.change_24h,
     unrealizedPnl: h.unrealized_pnl,
@@ -194,12 +172,12 @@ export default function Portfolio() {
               <section className="mb-6 sm:mb-8">
                 <div className="h-3 rounded-full bg-muted overflow-hidden">
                   <div className="h-full flex">
-                    {holdings.map((h, i) => (
+                    {holdings.map((h) => (
                       <div
                         key={h.coin_id}
                         style={{
                           width: `${h.allocation_pct}%`,
-                          backgroundColor: getCoinColor(h.symbol, i),
+                          backgroundColor: getCoinColor(h.symbol),
                         }}
                       />
                     ))}
