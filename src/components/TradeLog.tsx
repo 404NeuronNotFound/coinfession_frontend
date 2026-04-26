@@ -10,6 +10,7 @@ import DashboardHeader from "@/components/ui/DashboardHeader";
 import { LogTradeDrawer } from "@/components/ui/LogTradeDrawer";
 import { useTradeStore } from "@/stores/tradeStore";
 import { exportTradesCsv } from "@/api/tradeApi";
+import { getCoinColor } from "@/lib/coinColors";
 
 interface TradeLogProps {
   onLogTrade?: () => void;
@@ -258,7 +259,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
                       <div className="flex items-center gap-2">
                         <div
                           className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                          style={{ backgroundColor: "#3b82f6" }}
+                          style={{ backgroundColor: getCoinColor(trade.coin.symbol) }}
                         >
                           {trade.coin.symbol[0]}
                         </div>
