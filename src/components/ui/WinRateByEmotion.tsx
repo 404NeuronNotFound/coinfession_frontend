@@ -1,18 +1,13 @@
 'use client';
 
-interface EmotionData {
-  emotion: string;
-  count: number;
-  pnl: number;
-  color: string;
-}
+import { EmotionStat } from "@/types/emotionJournal.types";
 
 interface WinRateByEmotionProps {
-  data: EmotionData[];
+  data: EmotionStat[];
 }
 
 export default function WinRateByEmotion({ data }: WinRateByEmotionProps) {
-  const maxCount = Math.max(...data.map(d => d.count));
+  const maxCount = Math.max(...data.map(d => d.trade_count), 1);
 
   return (
     <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
@@ -21,14 +16,14 @@ export default function WinRateByEmotion({ data }: WinRateByEmotionProps) {
       </h3>
 
       <div className="space-y-4">
-        {data.map((item, i) => {
-          const barWidth = (item.count / maxCount) * 100;
+        {data.map((item) => {
+          const barWidth = (item.trade_count / maxCount) * 100;
 
           return (
-            <div key={i} className="flex items-center gap-3">
+            <div key={item.id} className="flex items-center gap-3">
               {/* Emotion Label */}
               <div className="w-24 sm:w-28">
-                <div className="text-xs sm:text-sm font-semibold text-foreground">{item.emotion}</div>
+                <div className="text-xs sm:text-sm font-semibold text-foreground">{item.name}</div>
               </div>
 
               {/* Bar */}
@@ -41,7 +36,7 @@ export default function WinRateByEmotion({ data }: WinRateByEmotionProps) {
 
               {/* Count */}
               <div className="w-12 text-right">
-                <div className="text-xs sm:text-sm font-semibold text-foreground">{item.count}</div>
+                <div className="text-xs sm:text-sm font-semibold text-foreground">{item.trade_count}</div>
               </div>
             </div>
           );

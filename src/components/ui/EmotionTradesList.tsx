@@ -1,22 +1,17 @@
 'use client';
 
 import { Badge } from "@/components/ui/badge";
-
-interface Trade {
-  id: number;
-  date: string;
-  type: "BUY" | "SELL";
-  coin: string;
-  ticker: string;
-  emotion: string;
-  note: string;
-  pnl: string;
-  color: string;
-}
+import { EmotionTrade } from "@/types/emotionJournal.types";
 
 interface EmotionTradesListProps {
-  trades: Trade[];
+  trades: EmotionTrade[];
 }
+
+const formatPnL = (pnl: number | null, isOpen: boolean): string => {
+  if (isOpen || pnl === null) return "Open";
+  if (pnl >= 0) return `+$${Math.abs(pnl).toLocaleString()}`;
+  return `-$${Math.abs(pnl).toLocaleString()}`;
+};
 
 export default function EmotionTradesList({ trades }: EmotionTradesListProps) {
   return (
@@ -34,19 +29,19 @@ export default function EmotionTradesList({ trades }: EmotionTradesListProps) {
                 {/* Emotion Dot */}
                 <div
                   className="w-3 h-3 rounded-full shrink-0"
-                  style={{ backgroundColor: trade.color }}
+                  style={{ backgroundColor: trade.emotion_color }}
                 />
 
                 {/* Trade Info */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs sm:text-sm font-semibold text-foreground">{trade.date}</span>
-                    <Badge variant={trade.type === "BUY" ? "secondary" : "default"} className="text-xs">
-                      {trade.type}
+                    <Badge variant={trade.trade_type === "BUY" ? "secondary" : "default"} className="text-xs">
+                      {trade.trade_type}
                     </Badge>
-                    <span className="text-xs sm:text-sm font-semibold text-foreground">{trade.ticker}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-foreground">{trade.coin_symbol}</span>
                     <Badge variant="outline" className="text-xs">
-                      {trade.emotion}
+                      {trade.emotion_name}
                     </Badge>
                   </div>
                 </div>
@@ -57,22 +52,24 @@ export default function EmotionTradesList({ trades }: EmotionTradesListProps) {
                 <div
                   className="text-xs sm:text-sm font-semibold"
                   style={{
-                    color: trade.pnl === "Open" 
-                      ? "hsl(var(--muted-foreground))" 
-                      : trade.pnl.startsWith("+")
+                    color: trade.is_open
+                      ? "hsl(var(--muted-foreground))"
+                      : trade.realized_pnl !== null && trade.realized_pnl >= 0
                       ? "hsl(var(--primary))"
                       : "hsl(var(--destructive))",
                   }}
                 >
-                  {trade.pnl}
+                  {formatPnL(trade.realized_pnl, trade.is_open)}
                 </div>
               </div>
             </div>
 
             {/* Note */}
-            <div className="text-xs text-muted-foreground ml-5">
-              {trade.note}
-            </div>
+            {trade.notes && (
+              <div className="text-xs text-muted-foreground ml-5">
+                {trade.notes}
+              </div>
+            )}
           </div>
         ))}
       </div>
