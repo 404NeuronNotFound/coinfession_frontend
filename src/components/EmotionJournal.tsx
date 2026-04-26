@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import EmotionStats from "@/components/ui/EmotionStats";
@@ -11,78 +11,49 @@ import EmotionTradesList from "@/components/ui/EmotionTradesList";
 import TradingActivityHeatmap from "@/components/ui/TradingActivityHeatmap";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
+import { useEmotionJournalStore } from "@/stores/emotionJournalStore";
 import { Button } from "@/components/ui/button";
-
-const MOCK_EMOTION_STATS = [
-  { emotion: "Disciplined", count: 8, pnl: 5420, color: "#22c55e" },
-  { emotion: "Patient", count: 4, pnl: 1240, color: "#3b82f6" },
-  { emotion: "Overconfident", count: 3, pnl: -585, color: "#f59e0b" },
-  { emotion: "FOMO", count: 4, pnl: -890, color: "#ef4444" },
-  { emotion: "Panic Sold", count: 5, pnl: -340, color: "#8b5cf6" },
-  { emotion: "Hesitant", count: 3, pnl: 580, color: "#6b7280" },
-];
-
-const MOCK_PATTERN_INSIGHTS = [
-  {
-    title: "Disciplined trades are your best trades",
-    description: "28% win rate when you trade with a plan. These 15 trades earned an average of +$420 each. Keep going.",
-    color: "bg-green-50",
-    borderColor: "border-green-200",
-    textColor: "text-green-900",
-  },
-  {
-    title: "Panic selling is destroying value",
-    description: "Every panic sell averaged -$340 in losses. 4 of 5 cases the price recovered within 7 days. You are selling the dip.",
-    color: "bg-red-50",
-    borderColor: "border-red-200",
-    textColor: "text-red-900",
-  },
-  {
-    title: "FOMO entries have a 25% win rate",
-    description: "You're chasing pumps. 4 of your FOMO trades entered after a 15% move. Average return: -8% per position.",
-    color: "bg-yellow-50",
-    borderColor: "border-yellow-200",
-    textColor: "text-yellow-900",
-  },
-];
-
-const MOCK_TRADES: Array<{
-  id: number;
-  date: string;
-  type: "BUY" | "SELL";
-  coin: string;
-  ticker: string;
-  emotion: string;
-  note: string;
-  pnl: string;
-  color: string;
-}> = [
-  { id: 1, date: "Apr 15", type: "BUY", coin: "Bitcoin", ticker: "BTC", emotion: "Disciplined", note: "DCA entry at 200MA", pnl: "Open", color: "#22c55e" },
-  { id: 2, date: "Apr 12", type: "SELL", coin: "Ethereum", ticker: "ETH", emotion: "Panic Sold", note: "Sold dip after 3% drop, could have held", pnl: "-$388", color: "#8b5cf6" },
-  { id: 3, date: "Apr 10", type: "BUY", coin: "Solana", ticker: "SOL", emotion: "FOMO", note: "Saw it pumping 15% on Twitter", pnl: "Open", color: "#ef4444" },
-  { id: 4, date: "Apr 5", type: "SELL", coin: "Bitcoin", ticker: "BTC", emotion: "Disciplined", note: "Hit my profit target as planned", pnl: "+$801", color: "#22c55e" },
-  { id: 5, date: "Mar 28", type: "BUY", coin: "Solana", ticker: "SOL", emotion: "Patient", note: "Waiting 10am for 2 weeks, finally entered", pnl: "Open", color: "#3b82f6" },
-  { id: 6, date: "Mar 20", type: "SELL", coin: "Solana", ticker: "SOL", emotion: "Disciplined", note: "Partial exit at resistance, keeping half", pnl: "+$672", color: "#22c55e" },
-  { id: 7, date: "Mar 15", type: "BUY", coin: "Ethereum", ticker: "ETH", emotion: "Patient", note: "Accumulating, this for 2 weeks, finally entered", pnl: "Open", color: "#3b82f6" },
-  { id: 8, date: "Mar 10", type: "SELL", coin: "Avalanche", ticker: "AVAX", emotion: "Panic Sold", note: "Stop loss hit, should have held through it", pnl: "-$95", color: "#8b5cf6" },
-];
 
 export default function EmotionJournal() {
   const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const d = theme === "dark";
-  const { isAuthenticated } = useAuthStore();
-  const [selectedEmotion, setSelectedEmotion] = useState("All");
+  const { isAuthenticated, accessToken } = useAuthStore();
+  
+  const {
+    emotionStats,
+    trades,
+    insights,
+    heatmap,
+    activeEmotionId,
+    loading,
+    error,
+    loadJournal,
+    setActiveEmotion,
+    clearError,
+  } = useEmotionJournalStore();
 
+  // Load data on mount
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+    if (!isAuthenticated) {
+      router.replace("/login");
+      return;
+    }
+
+    if (accessToken) {
+      loadJournal(accessToken);
+    }
+  }, [isAuthenticated, accessToken, loadJournal, router]);
 
   if (!isAuthenticated) return null;
 
-  const filteredTrades = selectedEmotion === "All" 
-    ? MOCK_TRADES 
-    : MOCK_TRADES.filter(t => t.emotion === selectedEmotion);
+  const handleEmotionClick = (emotionId: number) => {
+    setActiveEmotion(emotionId);
+  };
+
+  const handleShowAll = () => {
+    setActiveEmotion(null);
+  };
 
   return (
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
@@ -100,50 +71,94 @@ export default function EmotionJournal() {
           </div>
         </div>
 
+        {/* Error message */}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+            <div className="flex items-start justify-between">
+              <div className="text-sm text-red-900">{error}</div>
+              <button
+                onClick={clearError}
+                className="text-red-600 hover:text-red-700 font-semibold text-sm"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading state */}
+        {loading && (
+          <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="text-sm text-blue-900">Loading emotion journal...</div>
+          </div>
+        )}
+
         {/* Emotion Stats */}
-        <section className="mb-6 sm:mb-8">
-          <EmotionStats stats={MOCK_EMOTION_STATS} />
-        </section>
+        {emotionStats.length > 0 && (
+          <section className="mb-6 sm:mb-8">
+            <EmotionStats
+              stats={emotionStats}
+              activeEmotionId={activeEmotionId}
+              onEmotionClick={handleEmotionClick}
+            />
+          </section>
+        )}
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
-          {/* Win Rate by Emotion */}
-          <WinRateByEmotion data={MOCK_EMOTION_STATS} />
+        {emotionStats.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+            {/* Win Rate by Emotion */}
+            <WinRateByEmotion data={emotionStats} />
 
-          {/* Avg P&L by Emotion */}
-          <AvgPnLByEmotion data={MOCK_EMOTION_STATS} />
-        </div>
+            {/* Avg P&L by Emotion */}
+            <AvgPnLByEmotion data={emotionStats} />
+          </div>
+        )}
 
         {/* Pattern Insights */}
-        <section className="mb-6 sm:mb-8">
-          <PatternInsights insights={MOCK_PATTERN_INSIGHTS} />
-        </section>
+        {insights.length > 0 && (
+          <section className="mb-6 sm:mb-8">
+            <PatternInsights insights={insights} />
+          </section>
+        )}
 
         {/* Emotion Filter */}
-        <section className="mb-6 sm:mb-8">
-          <div className="flex flex-wrap gap-2">
-            {["All", ...MOCK_EMOTION_STATS.map(e => e.emotion)].map((emotion) => (
+        {emotionStats.length > 0 && (
+          <section className="mb-6 sm:mb-8">
+            <div className="flex flex-wrap gap-2">
               <Button
-                key={emotion}
-                variant={selectedEmotion === emotion ? "default" : "outline"}
+                variant={activeEmotionId === null ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedEmotion(emotion)}
+                onClick={handleShowAll}
                 className="text-xs sm:text-sm"
               >
-                {emotion}
+                All
               </Button>
-            ))}
-          </div>
-        </section>
+              {emotionStats.map((emotion) => (
+                <Button
+                  key={emotion.id}
+                  variant={activeEmotionId === emotion.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleEmotionClick(emotion.id)}
+                  className="text-xs sm:text-sm"
+                >
+                  {emotion.name}
+                </Button>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Trades List */}
-        <section className="mb-6 sm:mb-8">
-          <EmotionTradesList trades={filteredTrades} />
-        </section>
+        {trades.length > 0 && (
+          <section className="mb-6 sm:mb-8">
+            <EmotionTradesList trades={trades} />
+          </section>
+        )}
 
         {/* Trading Activity Heatmap */}
         <section>
-          <TradingActivityHeatmap />
+          <TradingActivityHeatmap data={heatmap} />
         </section>
       </div>
     </main>
