@@ -94,8 +94,21 @@ export const useTradeStore = create<TradeState>((set, get) => ({
         fetchTradeSummary(filters),
       ]);
       
+      // Sort trades: open trades first, then closed trades by date
+      const sortedTrades = [...tradesResponse.results].sort((a, b) => {
+        const aIsOpen = a.is_open;
+        const bIsOpen = b.is_open;
+        
+        // If one is open and the other is closed, open comes first
+        if (aIsOpen && !bIsOpen) return -1;
+        if (!aIsOpen && bIsOpen) return 1;
+        
+        // If both are open or both are closed, sort by date (newest first)
+        return new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime();
+      });
+      
       set({
-        trades: tradesResponse.results,
+        trades: sortedTrades,
         summary: summaryResponse,
         pagination: {
           count: tradesResponse.count,
