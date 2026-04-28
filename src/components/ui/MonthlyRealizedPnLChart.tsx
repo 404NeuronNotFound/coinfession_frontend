@@ -3,6 +3,7 @@
 interface DataPoint {
   month: string;
   pnl: number;
+  isSelected?: boolean;
 }
 
 interface MonthlyRealizedPnLChartProps {
@@ -10,7 +11,21 @@ interface MonthlyRealizedPnLChartProps {
 }
 
 export default function MonthlyRealizedPnLChart({ data }: MonthlyRealizedPnLChartProps) {
-  const maxPnL = Math.max(...data.map(d => Math.abs(d.pnl)));
+  // Handle empty data
+  if (!data || data.length === 0) {
+    return (
+      <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
+        <h3 className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-6">
+          Monthly Realized P&L
+        </h3>
+        <div className="h-40 sm:h-48 flex items-center justify-center text-sm text-muted-foreground">
+          No data available
+        </div>
+      </div>
+    );
+  }
+
+  const maxPnL = Math.max(...data.map(d => Math.abs(d.pnl)), 1);
   const chartHeight = 120;
 
   return (
@@ -31,10 +46,12 @@ export default function MonthlyRealizedPnLChart({ data }: MonthlyRealizedPnLChar
                 <div
                   className={`w-full rounded-t transition-colors ${
                     isPositive ? 'bg-green-600' : 'bg-red-600'
-                  }`}
+                  } ${d.isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   style={{ height: `${barHeight}px` }}
                 />
-                <span className="text-xs text-muted-foreground">{d.month}</span>
+                <span className={`text-xs ${d.isSelected ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+                  {d.month}
+                </span>
               </div>
             );
           })}
