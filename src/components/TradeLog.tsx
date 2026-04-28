@@ -241,10 +241,14 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                trades.map((trade) => (
+                trades.map((trade) => {
+                  const isOpen = trade.is_open || trade.realized_pnl === null;
+                  return (
                   <TableRow 
                     key={trade.id} 
-                    className="border-b border-border hover:bg-muted/50 cursor-pointer"
+                    className={`border-b border-border hover:bg-muted/50 cursor-pointer ${
+                      isOpen ? 'bg-green-50/50 dark:bg-green-950/20' : ''
+                    }`}
                     onClick={() => openDrawer(trade)}
                   >
                     <TableCell className="text-xs sm:text-sm font-medium text-foreground">
@@ -301,7 +305,8 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
                       {trade.notes || "—"}
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>
