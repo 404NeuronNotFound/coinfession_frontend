@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MonthlyStats from "@/components/ui/MonthlyStats";
 import MonthlyRealizedPnLChart from "@/components/ui/MonthlyRealizedPnLChart";
@@ -11,138 +11,168 @@ import PnLByCoinMonth from "@/components/ui/PnLByCoinMonth";
 import MonthlyReportHistory from "@/components/ui/MonthlyReportHistory";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
+import { useMonthlyReportStore } from "@/stores/monthlyReportStore";
 import { Button } from "@/components/ui/button";
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-const MOCK_CURRENT_MONTH = {
-  month: "Apr",
-  year: 2026,
-  realizedPnL: 413,
-  winRate: 63,
-  totalTrades: 8,
-  feesPaid: 46,
-  avgPerTrade: 52,
-};
-
-const MOCK_MONTHLY_PNL_DATA = [
-  { month: "Nov", pnl: 200 },
-  { month: "Dec", pnl: 400 },
-  { month: "Jan", pnl: -300 },
-  { month: "Feb", pnl: 600 },
-  { month: "Mar", pnl: 500 },
-  { month: "Apr", pnl: 413 },
-];
-
-const MOCK_CUMULATIVE_DATA = [
-  { month: "Nov", pnl: 200 },
-  { month: "Dec", pnl: 600 },
-  { month: "Jan", pnl: 300 },
-  { month: "Feb", pnl: 900 },
-  { month: "Mar", pnl: 1400 },
-  { month: "Apr", pnl: 1813 },
-];
-
-const MOCK_BEST_WORST = {
-  best: {
-    coin: "Bitcoin",
-    ticker: "BTC",
-    type: "SELL",
-    buyPrice: 61000,
-    sellPrice: 63200,
-    pnl: 801,
-    emotion: "Disciplined",
-    date: "Apr 5",
-  },
-  worst: {
-    coin: "Ethereum",
-    ticker: "ETH",
-    type: "SELL",
-    buyPrice: 2800,
-    sellPrice: 2420,
-    pnl: -388,
-    emotion: "Panic Sold",
-    date: "Apr 12",
-  },
-};
-
-const MOCK_MONTH_TRADES: Array<{
-  date: string;
-  type: "BUY" | "SELL";
-  ticker: string;
-  price: number;
-  emotion: string;
-  status?: string;
-  pnl?: number;
-}> = [
-  { date: "Apr 15", type: "BUY", ticker: "BTC", price: 61800, emotion: "Disciplined", status: "Open" },
-  { date: "Apr 12", type: "SELL", ticker: "ETH", price: 2420, emotion: "Panic Sold", pnl: -388 },
-  { date: "Apr 10", type: "BUY", ticker: "AVAX", price: 35.4, emotion: "FOMO", status: "Open" },
-  { date: "Apr 5", type: "SELL", ticker: "BTC", price: 63200, emotion: "Disciplined", pnl: 801 },
-  { date: "Apr 2", type: "BUY", ticker: "SOL", price: 168, emotion: "Patient", status: "Open" },
-];
-
-const MOCK_PNL_BY_COIN = [
-  { coin: "Bitcoin", ticker: "BTC", pnl: 801, color: "#F7931A" },
-  { coin: "Ethereum", ticker: "ETH", pnl: -388, color: "#627EEA" },
-  { coin: "Solana", ticker: "SOL", pnl: 0, color: "#9945FF" },
-  { coin: "Avalanche", ticker: "AVAX", pnl: 0, color: "#E84142" },
-];
-
-const MOCK_HISTORY = [
-  { month: "Apr 2026", trades: 8, winRate: 63, pnl: 413 },
-  { month: "Mar 2026", trades: 10, winRate: 70, pnl: 780 },
-  { month: "Feb 2026", trades: 6, winRate: 67, pnl: 520 },
-  { month: "Jan 2026", trades: 5, winRate: 40, pnl: -210 },
-  { month: "Dec 2025", trades: 9, winRate: 56, pnl: 340 },
-  { month: "Nov 2025", trades: 7, winRate: 57, pnl: 890 },
-];
+import { getCoinColor } from "@/lib/coinColors";
 
 export default function MonthlyReport() {
   const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const d = theme === "dark";
   const { isAuthenticated } = useAuthStore();
-  const [selectedMonth, setSelectedMonth] = useState("Apr");
+  
+  const {
+    availableMonths,
+    selectedYear,
+    selectedMonth,
+    detail,
+    loadingList,
+    loadingDetail,
+    error,
+    loadReportList,
+    selectMonth,
+  } = useMonthlyReportStore();
 
+  // Extract data from detail
+  const metrics = detail?.metrics ?? null;
+  const trades = detail?.trades ?? [];
+  const bestWorst = detail?.best_worst ?? null;
+  const pnlByCoin = detail?.pnl_by_coin ?? [];
+  const monthlyBars = detail?.monthly_bars ?? [];
+  const cumulativePnl = detail?.cumulative_pnl ?? [];
+
+  // Load report list on mount
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+    if (!isAuthenticated) {
+      router.replace("/login");
+      return;
+    }
+    
+    loadReportList();
+  }, [isAuthenticated, router, loadReportList]);
 
   if (!isAuthenticated) return null;
 
-  const stats = [
+  // Format dollar values
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+  
+  const fmtDec = (n: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
+  // Build stats array for MonthlyStats component
+  const stats = metrics ? [
     {
       label: "Realized P&L",
-      value: `+$${MOCK_CURRENT_MONTH.realizedPnL}`,
-      subtext: "profitable month",
-      color: "success" as const,
+      value: metrics.realized_pnl >= 0 
+        ? `+${fmt(metrics.realized_pnl)}` 
+        : fmt(metrics.realized_pnl),
+      subtext: metrics.month_label,
+      color: (metrics.realized_pnl >= 0 ? "success" : "warning") as "success" | "warning",
     },
     {
       label: "Win Rate",
-      value: `${MOCK_CURRENT_MONTH.winRate}%`,
-      subtext: `5 of 8 trades`,
-      color: "success" as const,
+      value: `${Math.round(metrics.win_rate)}%`,
+      subtext: `${metrics.winning_trades} of ${metrics.closed_trades} trades`,
+      color: (metrics.win_rate >= 50 ? "success" : "warning") as "success" | "warning",
     },
     {
       label: "Total Trades",
-      value: `${MOCK_CURRENT_MONTH.totalTrades}`,
+      value: `${metrics.total_trades}`,
       subtext: "closed positions",
-      color: "default" as const,
+      color: "default" as "default",
     },
     {
       label: "Fees Paid",
-      value: `$${MOCK_CURRENT_MONTH.feesPaid}`,
-      subtext: "15.7% of P&L",
-      color: "warning" as const,
+      value: `${fmt(metrics.total_fees)}`,
+      subtext: `${metrics.fees_pct_of_pnl.toFixed(1)}% of P&L`,
+      color: "warning" as "warning",
     },
     {
       label: "Avg Per Trade",
-      value: `+$${MOCK_CURRENT_MONTH.avgPerTrade}`,
-      subtext: "per trade",
-      color: "success" as const,
+      value: metrics.avg_pnl_per_trade >= 0 
+        ? `+${fmt(Math.abs(metrics.avg_pnl_per_trade))}` 
+        : `-${fmt(Math.abs(metrics.avg_pnl_per_trade))}`,
+      subtext: "realized P&L",
+      color: (metrics.avg_pnl_per_trade >= 0 ? "success" : "warning") as "success" | "warning",
     },
+  ] : [
+    { label: "Realized P&L", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Win Rate", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Total Trades", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Fees Paid", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Avg Per Trade", value: "—", subtext: "loading...", color: "default" as "default" },
   ];
+
+  // Transform monthlyBars for MonthlyRealizedPnLChart
+  const monthlyPnlData = monthlyBars.map(bar => ({
+    month: bar.month_label,
+    pnl: bar.realized_pnl,
+    isSelected: bar.year === selectedYear && bar.month === selectedMonth,
+  }));
+
+  // Transform cumulativePnl for CumulativePnLAllTime
+  const cumulativeData = cumulativePnl.map(point => ({
+    month: point.month_label,
+    pnl: point.cumulative_pnl,
+  }));
+
+  // Transform bestWorst for BestWorstTradeMonth
+  const bestWorstData = bestWorst && (bestWorst.best_trade || bestWorst.worst_trade) ? {
+    best: bestWorst.best_trade ? {
+      coin: bestWorst.best_trade.coin_name,
+      ticker: bestWorst.best_trade.coin_symbol,
+      type: bestWorst.best_trade.trade_type.toUpperCase(),
+      buyPrice: bestWorst.best_trade.buy_price ?? 0,
+      sellPrice: bestWorst.best_trade.sell_price ?? 0,
+      pnl: bestWorst.best_trade.realized_pnl ?? 0,
+      emotion: bestWorst.best_trade.emotions[0]?.name ?? "—",
+      date: bestWorst.best_trade.date,
+      quantity: bestWorst.best_trade.quantity,
+    } : null,
+    worst: bestWorst.worst_trade ? {
+      coin: bestWorst.worst_trade.coin_name,
+      ticker: bestWorst.worst_trade.coin_symbol,
+      type: bestWorst.worst_trade.trade_type.toUpperCase(),
+      buyPrice: bestWorst.worst_trade.buy_price ?? 0,
+      sellPrice: bestWorst.worst_trade.sell_price ?? 0,
+      pnl: bestWorst.worst_trade.realized_pnl ?? 0,
+      emotion: bestWorst.worst_trade.emotions[0]?.name ?? "—",
+      date: bestWorst.worst_trade.date,
+      quantity: bestWorst.worst_trade.quantity,
+    } : null,
+  } : null;
+
+  // Transform trades for MonthTradesList
+  const tradesData = trades.map(trade => ({
+    date: trade.date,
+    type: trade.trade_type.toUpperCase() as "BUY" | "SELL",
+    ticker: trade.coin_symbol,
+    price: trade.buy_price ?? trade.sell_price ?? 0,
+    emotion: trade.emotions[0]?.name ?? "—",
+    status: trade.is_open ? "Open" : undefined,
+    pnl: trade.realized_pnl ?? undefined,
+    quantity: trade.quantity,
+  }));
+
+  // Transform pnlByCoin for PnLByCoinMonth
+  const pnlByCoinData = pnlByCoin.map(coin => ({
+    coin: coin.name,
+    ticker: coin.symbol,
+    pnl: coin.realized_pnl,
+    color: getCoinColor(coin.symbol),
+  }));
+
+  // Transform availableMonths for MonthlyReportHistory
+  const historyData = availableMonths.map(month => ({
+    month: month.month_label,
+    trades: month.total_trades,
+    winRate: Math.round(month.win_rate),
+    pnl: month.realized_pnl,
+    year: month.year,
+    monthNum: month.month,
+    isSelected: month.year === selectedYear && month.month === selectedMonth,
+  }));
 
   return (
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
@@ -155,25 +185,39 @@ export default function MonthlyReport() {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              April 2026 · presented Apr 20
+              {metrics ? metrics.month_label : "Loading..."} · presented {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </p>
           </div>
 
           {/* Month Selector */}
           <div className="flex items-center gap-2 flex-wrap">
-            {MONTHS.map((month) => (
-              <Button
-                key={month}
-                variant={selectedMonth === month ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedMonth(month)}
-                className="text-xs sm:text-sm"
-              >
-                {month}
-              </Button>
-            ))}
+            {loadingList ? (
+              <div className="text-sm text-muted-foreground">Loading months...</div>
+            ) : availableMonths.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No months available</div>
+            ) : (
+              availableMonths.map((month) => (
+                <Button
+                  key={`${month.year}-${month.month}`}
+                  variant={month.year === selectedYear && month.month === selectedMonth ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => selectMonth(month.year, month.month)}
+                  className="text-xs sm:text-sm"
+                  disabled={loadingDetail}
+                >
+                  {month.month_label}
+                </Button>
+              ))
+            )}
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-900 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Stats */}
         <section className="mb-6 sm:mb-8">
@@ -183,29 +227,92 @@ export default function MonthlyReport() {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* Monthly Realized P&L */}
-          <MonthlyRealizedPnLChart data={MOCK_MONTHLY_PNL_DATA} />
+          {loadingDetail ? (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">Loading chart...</div>
+            </div>
+          ) : monthlyPnlData.length > 0 ? (
+            <MonthlyRealizedPnLChart data={monthlyPnlData} />
+          ) : (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">No data available</div>
+            </div>
+          )}
 
           {/* Cumulative P&L All Time */}
-          <CumulativePnLAllTime data={MOCK_CUMULATIVE_DATA} />
+          {loadingDetail ? (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">Loading chart...</div>
+            </div>
+          ) : cumulativeData.length > 0 ? (
+            <CumulativePnLAllTime data={cumulativeData} />
+          ) : (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">No data available</div>
+            </div>
+          )}
         </div>
 
         {/* Best & Worst Trade */}
         <section className="mb-6 sm:mb-8">
-          <BestWorstTradeMonth data={MOCK_BEST_WORST} />
+          {loadingDetail ? (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-48 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">Loading trades...</div>
+            </div>
+          ) : bestWorstData && (bestWorstData.best || bestWorstData.worst) ? (
+            <BestWorstTradeMonth data={bestWorstData as any} />
+          ) : (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-48 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">No closed trades this month</div>
+            </div>
+          )}
         </section>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* This Month's Trades */}
-          <MonthTradesList trades={MOCK_MONTH_TRADES} />
+          {loadingDetail ? (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">Loading trades...</div>
+            </div>
+          ) : tradesData.length > 0 ? (
+            <MonthTradesList trades={tradesData} />
+          ) : (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">No trades this month</div>
+            </div>
+          )}
 
           {/* P&L by Coin */}
-          <PnLByCoinMonth data={MOCK_PNL_BY_COIN} />
+          {loadingDetail ? (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">Loading P&L...</div>
+            </div>
+          ) : pnlByCoinData.length > 0 ? (
+            <PnLByCoinMonth data={pnlByCoinData} />
+          ) : (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">No P&L data available</div>
+            </div>
+          )}
         </div>
 
         {/* Monthly Report History */}
         <section>
-          <MonthlyReportHistory data={MOCK_HISTORY} />
+          {loadingList ? (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">Loading history...</div>
+            </div>
+          ) : historyData.length > 0 ? (
+            <MonthlyReportHistory 
+              data={historyData} 
+              onSelectMonth={(year, month) => selectMonth(year, month)}
+            />
+          ) : (
+            <div className="p-4 sm:p-6 rounded-lg border border-border bg-card h-64 flex items-center justify-center">
+              <div className="text-sm text-muted-foreground">No history available</div>
+            </div>
+          )}
         </section>
       </div>
     </main>
