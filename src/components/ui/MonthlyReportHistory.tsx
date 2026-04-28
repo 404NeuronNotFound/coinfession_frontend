@@ -5,17 +5,21 @@ interface HistoryItem {
   trades: number;
   winRate: number;
   pnl: number;
+  year?: number;
+  monthNum?: number;
+  isSelected?: boolean;
 }
 
 interface MonthlyReportHistoryProps {
   data: HistoryItem[];
+  onSelectMonth?: (year: number, month: number) => void;
 }
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
-export default function MonthlyReportHistory({ data }: MonthlyReportHistoryProps) {
-  const maxTrades = Math.max(...data.map(d => d.trades));
+export default function MonthlyReportHistory({ data, onSelectMonth }: MonthlyReportHistoryProps) {
+  const maxTrades = Math.max(...data.map(d => d.trades), 1);
 
   return (
     <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
@@ -29,7 +33,17 @@ export default function MonthlyReportHistory({ data }: MonthlyReportHistoryProps
           const isPositive = item.pnl >= 0;
 
           return (
-            <div key={i} className="flex items-center gap-3 pb-3 border-b border-border last:border-0 last:pb-0">
+            <div 
+              key={i} 
+              className={`flex items-center gap-3 pb-3 border-b border-border last:border-0 last:pb-0 ${
+                onSelectMonth && item.year && item.monthNum ? 'cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-2 rounded transition-colors' : ''
+              } ${item.isSelected ? 'bg-muted/50' : ''}`}
+              onClick={() => {
+                if (onSelectMonth && item.year && item.monthNum) {
+                  onSelectMonth(item.year, item.monthNum);
+                }
+              }}
+            >
               {/* Month */}
               <div className="w-24 sm:w-28">
                 <div className="text-xs sm:text-sm font-semibold text-foreground">{item.month}</div>

@@ -9,12 +9,13 @@ interface Trade {
   pnl: number;
   emotion: string;
   date: string;
+  quantity?: number;
 }
 
 interface BestWorstTradeMonthProps {
   data: {
-    best: Trade;
-    worst: Trade;
+    best: Trade | null;
+    worst: Trade | null;
   };
 }
 
@@ -37,25 +38,31 @@ export default function BestWorstTradeMonth({ data }: BestWorstTradeMonthProps) 
             Best Trade
           </div>
 
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm text-green-900">{data.best.ticker} · {data.best.type}</span>
-              <span className="text-xs sm:text-sm font-semibold text-green-900">{data.best.date}</span>
-            </div>
-            <div className="text-xs sm:text-sm text-green-900">
-              {fmtDec(data.best.buyPrice)} → {fmtDec(data.best.sellPrice)}
-            </div>
-          </div>
+          {data.best ? (
+            <>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs sm:text-sm text-green-900">{data.best.ticker} · {data.best.type}</span>
+                  <span className="text-xs sm:text-sm font-semibold text-green-900">{data.best.date}</span>
+                </div>
+                <div className="text-xs sm:text-sm text-green-900">
+                  {data.best.quantity && `${data.best.quantity} @ `}{fmtDec(data.best.buyPrice)} → {fmtDec(data.best.sellPrice)}
+                </div>
+              </div>
 
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-2xl sm:text-3xl font-black text-green-600">
-              +{fmt(data.best.pnl)}
-            </div>
-          </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-2xl sm:text-3xl font-black text-green-600">
+                  +{fmt(data.best.pnl)}
+                </div>
+              </div>
 
-          <div className="inline-block px-3 py-1 rounded-full bg-green-100 text-xs font-semibold text-green-900">
-            {data.best.emotion}
-          </div>
+              <div className="inline-block px-3 py-1 rounded-full bg-green-100 text-xs font-semibold text-green-900">
+                {data.best.emotion}
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-green-900 opacity-50">No closed trades yet</div>
+          )}
         </div>
 
         {/* Worst Trade */}
@@ -64,25 +71,31 @@ export default function BestWorstTradeMonth({ data }: BestWorstTradeMonthProps) 
             Worst Trade
           </div>
 
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm text-red-900">{data.worst.ticker} · {data.worst.type}</span>
-              <span className="text-xs sm:text-sm font-semibold text-red-900">{data.worst.date}</span>
-            </div>
-            <div className="text-xs sm:text-sm text-red-900">
-              {fmtDec(data.worst.buyPrice)} → {fmtDec(data.worst.sellPrice)}
-            </div>
-          </div>
+          {data.worst ? (
+            <>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs sm:text-sm text-red-900">{data.worst.ticker} · {data.worst.type}</span>
+                  <span className="text-xs sm:text-sm font-semibold text-red-900">{data.worst.date}</span>
+                </div>
+                <div className="text-xs sm:text-sm text-red-900">
+                  {data.worst.quantity && `${data.worst.quantity} @ `}{fmtDec(data.worst.buyPrice)} → {fmtDec(data.worst.sellPrice)}
+                </div>
+              </div>
 
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-2xl sm:text-3xl font-black text-red-600">
-              {fmt(data.worst.pnl)}
-            </div>
-          </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-2xl sm:text-3xl font-black text-red-600">
+                  {fmt(data.worst.pnl)}
+                </div>
+              </div>
 
-          <div className="inline-block px-3 py-1 rounded-full bg-red-100 text-xs font-semibold text-red-900">
-            {data.worst.emotion}
-          </div>
+              <div className="inline-block px-3 py-1 rounded-full bg-red-100 text-xs font-semibold text-red-900">
+                {data.worst.emotion}
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-red-900 opacity-50">No closed trades yet</div>
+          )}
         </div>
       </div>
     </div>
