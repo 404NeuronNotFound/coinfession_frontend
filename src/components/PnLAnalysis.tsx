@@ -12,65 +12,8 @@ import FeeImpact from "@/components/ui/FeeImpact";
 import BestWorstTrades from "@/components/ui/BestWorstTrades";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
+import { usePnlAnalysisStore } from "@/stores/pnlAnalysisStore";
 import { Button } from "@/components/ui/button";
-
-const MOCK_STATS = {
-  realizedPnL: 53620,
-  winRate: 64,
-  avgWin: 1240,
-  avgLoss: 388,
-  profitFactor: 2.19,
-};
-
-const MOCK_CUMULATIVE_DATA = [
-  { month: "Nov", pnl: 500 },
-  { month: "Dec", pnl: 1200 },
-  { month: "Jan", pnl: 800 },
-  { month: "Feb", pnl: 1500 },
-  { month: "Mar", pnl: 2100 },
-  { month: "Apr", pnl: 3200 },
-];
-
-const MOCK_MONTHLY_PNL = [
-  { month: "Nov", pnl: 500 },
-  { month: "Dec", pnl: 700 },
-  { month: "Jan", pnl: -400 },
-  { month: "Feb", pnl: 700 },
-  { month: "Mar", pnl: 600 },
-  { month: "Apr", pnl: 1100 },
-];
-
-const MOCK_WIN_LOSS = {
-  wins: 16,
-  losses: 9,
-  breakEven: 2,
-};
-
-const MOCK_PNL_BY_COIN = [
-  { coin: "Bitcoin", ticker: "BTC", pnl: 2240, color: "#F7931A" },
-  { coin: "Ethereum", ticker: "ETH", pnl: 497, color: "#627EEA" },
-  { coin: "Solana", ticker: "SOL", pnl: 820, color: "#9945FF" },
-  { coin: "Avalanche", ticker: "AVAX", pnl: -95, color: "#E84142" },
-];
-
-const MOCK_FEE_IMPACT = {
-  totalFees: 504,
-  profitsFromFees: 1200,
-  feePercentage: 4.6,
-};
-
-const MOCK_BEST_WORST = {
-  bestTrades: [
-    { coin: "Bitcoin", date: "Apr 5", pnl: 1240, type: "SELL" },
-    { coin: "Ethereum", date: "Feb 28", pnl: 497, type: "SELL" },
-    { coin: "Solana", date: "Mar 20", pnl: 672, type: "SELL" },
-  ],
-  worstTrades: [
-    { coin: "Ethereum", date: "Apr 12", pnl: -480, type: "SELL" },
-    { coin: "Avalanche", date: "Mar 10", pnl: -95, type: "SELL" },
-    { coin: "Bitcoin", date: "Jan 14", pnl: -562, type: "SELL" },
-  ],
-};
 
 export default function PnLAnalysis() {
   const router = useRouter();
@@ -78,45 +21,124 @@ export default function PnLAnalysis() {
   const d = theme === "dark";
   const { isAuthenticated } = useAuthStore();
   const [timeframe, setTimeframe] = useState("1M");
+  
+  // P&L Analysis store
+  const { data, loading, error, loadPnlAnalysis } = usePnlAnalysisStore();
+  
+  // Derived data from store
+  const summary = data?.summary ?? null;
+  const cumulativePnl = data?.cumulative_pnl ?? [];
+  const monthlyPnl = data?.monthly_pnl ?? [];
+  const pnlByCoin = data?.pnl_by_coin ?? [];
+  const winLossRatio = data?.win_loss_ratio ?? null;
+  const feeImpact = data?.fee_impact ?? null;
+  const topWins = data?.top_wins ?? [];
+  const topLosses = data?.top_losses ?? [];
 
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+    if (!isAuthenticated) {
+      router.replace("/login");
+    } else {
+      // Load P&L analysis data on mount
+      loadPnlAnalysis();
+    }
+  }, [isAuthenticated, router, loadPnlAnalysis]);
 
   if (!isAuthenticated) return null;
 
+  // Format currency helpers
+  const fmtLarge = (n: number) => 
+    "$" + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  
+  const fmtPrecise = (n: number) => 
+    "$" + n.toFixed(2);
+
+  // Build stats array for PnLStats component
+  const realizedPnlColor: "success" | "warning" = summary && summary.realized_pnl >= 0 ? "success" : "warning";
+  const profitFactorColor: "success" | "warning" = summary && summary.profit_factor >= 1 ? "success" : "warning";
+  
   const stats = [
     {
       label: "Realized P&L",
-      value: `$${MOCK_STATS.realizedPnL.toLocaleString()}`,
+      value: summary ? fmtLarge(summary.realized_pnl) : "—",
       subtext: "all closed trades",
-      color: "success" as const,
+      color: realizedPnlColor,
     },
     {
       label: "Win Rate",
-      value: `${MOCK_STATS.winRate}%`,
+      value: summary ? `${Math.round(summary.win_rate)}%` : "—",
       subtext: "winning trades",
       color: "success" as const,
     },
     {
       label: "Avg Win",
-      value: `$${MOCK_STATS.avgWin}`,
+      value: summary ? fmtLarge(summary.avg_win) : "—",
       subtext: "per profitable trade",
       color: "success" as const,
     },
     {
       label: "Avg Loss",
-      value: `-$${MOCK_STATS.avgLoss}`,
+      value: summary ? `-${fmtLarge(Math.abs(summary.avg_loss))}` : "—",
       subtext: "per losing trade",
       color: "warning" as const,
     },
     {
       label: "Profit Factor",
-      value: `${MOCK_STATS.profitFactor}x`,
+      value: summary ? `${summary.profit_factor.toFixed(2)}x` : "—",
       subtext: "wins / losses",
-      color: "success" as const,
+      color: profitFactorColor,
     },
   ];
+
+  // Transform cumulative P&L data for chart
+  const cumulativeChartData = cumulativePnl.map((point) => ({
+    month: point.date,
+    pnl: point.cumulative_pnl,
+  }));
+
+  // Transform monthly P&L data for chart
+  const monthlyChartData = monthlyPnl.map((m) => ({
+    month: m.label,
+    pnl: m.realized_pnl,
+  }));
+
+  // Transform win/loss ratio data
+  const winLossData = winLossRatio ? {
+    wins: winLossRatio.winning_count,
+    losses: winLossRatio.losing_count,
+    breakEven: winLossRatio.breakeven_count,
+  } : { wins: 0, losses: 0, breakEven: 0 };
+
+  // Transform P&L by coin data
+  const pnlByCoinData = pnlByCoin.map((coin) => ({
+    coin: coin.name,
+    ticker: coin.symbol,
+    pnl: coin.realized_pnl,
+    color: "#3b82f6", // Default color, can be enhanced with coin colors
+  }));
+
+  // Transform fee impact data
+  const feeImpactData = feeImpact ? {
+    totalFees: feeImpact.total_fees,
+    profitsFromFees: feeImpact.gross_profits,
+    feePercentage: feeImpact.fee_impact_pct,
+  } : { totalFees: 0, profitsFromFees: 0, feePercentage: 0 };
+
+  // Transform best/worst trades data
+  const bestWorstData = {
+    bestTrades: topWins.map((trade) => ({
+      coin: trade.coin_name,
+      date: trade.date,
+      pnl: trade.realized_pnl,
+      type: trade.trade_type.toUpperCase(),
+    })),
+    worstTrades: topLosses.map((trade) => ({
+      coin: trade.coin_name,
+      date: trade.date,
+      pnl: trade.realized_pnl,
+      type: trade.trade_type.toUpperCase(),
+    })),
+  };
 
   return (
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
@@ -152,38 +174,52 @@ export default function PnLAnalysis() {
           </div>
         </div>
 
-        {/* Stats */}
-        <section className="mb-6 sm:mb-8">
-          <PnLStats stats={stats} />
-        </section>
+        {/* Error State */}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+          </div>
+        )}
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
-          {/* Cumulative P&L */}
-          <CumulativePnLChart data={MOCK_CUMULATIVE_DATA} />
+        {/* Loading State */}
+        <div style={{ opacity: loading ? 0.6 : 1 }}>
+          {/* Stats */}
+          <section className="mb-6 sm:mb-8">
+            <PnLStats stats={stats} />
+          </section>
 
-          {/* Win/Loss Ratio */}
-          <WinLossRatio data={MOCK_WIN_LOSS} />
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+            {/* Cumulative P&L */}
+            <CumulativePnLChart data={cumulativeChartData} />
+
+            {/* Win/Loss Ratio */}
+            <WinLossRatio data={winLossData} />
+          </div>
+
+          {/* Second Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+            {/* Monthly Realized P&L */}
+            <MonthlyRealizedPnL data={monthlyChartData} />
+
+            {/* Fee Impact */}
+            <FeeImpact data={feeImpactData} />
+          </div>
+
+          {/* P&L by Coin */}
+          {pnlByCoinData.length > 0 && (
+            <section className="mb-6 sm:mb-8">
+              <PnLByCoin data={pnlByCoinData} />
+            </section>
+          )}
+
+          {/* Best & Worst Trades */}
+          {(bestWorstData.bestTrades.length > 0 || bestWorstData.worstTrades.length > 0) && (
+            <section>
+              <BestWorstTrades data={bestWorstData} />
+            </section>
+          )}
         </div>
-
-        {/* Second Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
-          {/* Monthly Realized P&L */}
-          <MonthlyRealizedPnL data={MOCK_MONTHLY_PNL} />
-
-          {/* Fee Impact */}
-          <FeeImpact data={MOCK_FEE_IMPACT} />
-        </div>
-
-        {/* P&L by Coin */}
-        <section className="mb-6 sm:mb-8">
-          <PnLByCoin data={MOCK_PNL_BY_COIN} />
-        </section>
-
-        {/* Best & Worst Trades */}
-        <section>
-          <BestWorstTrades data={MOCK_BEST_WORST} />
-        </section>
       </div>
     </main>
   );
