@@ -1,6 +1,6 @@
 'use client';
 
-import { PatternInsight } from "@/types/emotionJournal.types";
+import { PatternInsight } from "@/types/emotionJournalTypes";
 
 interface PatternInsightsProps {
   insights: PatternInsight[];

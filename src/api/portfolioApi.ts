@@ -4,7 +4,7 @@
 // HTTP service functions for Portfolio feature
 // ─────────────────────────────────────────────────────────
 
-import type { PortfolioResponse } from "@/types/portfolio.types";
+import type { PortfolioResponse } from "@/types/portfolioTypes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { EmotionStat } from "@/types/emotionJournal.types";
+import { EmotionStat } from "@/types/emotionJournalTypes";
 
 interface EmotionStatsProps {
   stats: EmotionStat[];

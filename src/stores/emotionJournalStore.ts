@@ -6,7 +6,7 @@ import {
   EmotionTrade,
   PatternInsight,
   HeatmapDay,
-} from "@/types/emotionJournal.types";
+} from "@/types/emotionJournalTypes";
 
 interface EmotionJournalState {
   // Data

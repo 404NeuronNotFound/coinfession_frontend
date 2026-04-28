@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from "@/components/ui/badge";
-import { EmotionTrade } from "@/types/emotionJournal.types";
+import { EmotionTrade } from "@/types/emotionJournalTypes";
 
 interface EmotionTradesListProps {
   trades: EmotionTrade[];

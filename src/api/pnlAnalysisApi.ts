@@ -2,7 +2,7 @@
 // P&L ANALYSIS API
 // ═══════════════════════════════════════════════════════════════
 
-import type { PnlAnalysisResponse, PnlFilters } from "@/types/pnlAnalysis.types";
+import type { PnlAnalysisResponse, PnlFilters } from "@/types/pnlAnalysisTypes";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 

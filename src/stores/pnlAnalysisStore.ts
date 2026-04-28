@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { create } from "zustand";
-import type { PnlAnalysisResponse, PnlFilters } from "@/types/pnlAnalysis.types";
+import type { PnlAnalysisResponse, PnlFilters } from "@/types/pnlAnalysisTypes";
 import { fetchPnlAnalysis } from "@/api/pnlAnalysisApi";
 
 interface PnlAnalysisState {

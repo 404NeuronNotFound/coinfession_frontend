@@ -1,5 +1,5 @@
 import { apiFetch } from "@/api/client";
-import { EmotionJournalResponse, EmotionJournalFilters } from "@/types/emotionJournal.types";
+import { EmotionJournalResponse, EmotionJournalFilters } from "@/types/emotionJournalTypes";
 
 /**
  * Fetch emotion journal data from the backend.

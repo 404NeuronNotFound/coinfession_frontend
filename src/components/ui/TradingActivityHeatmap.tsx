@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { HeatmapDay } from '@/types/emotionJournal.types';
+import { HeatmapDay } from '@/types/emotionJournalTypes';
 
 interface TradingActivityHeatmapProps {
   data?: HeatmapDay[];

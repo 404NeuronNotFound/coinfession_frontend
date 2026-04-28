@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────
 
 import { create } from "zustand";
-import type { PortfolioResponse } from "@/types/portfolio.types";
+import type { PortfolioResponse } from "@/types/portfolioTypes";
 import { fetchPortfolio, refreshPortfolioPrices } from "@/api/portfolioApi";
 
 interface PortfolioState {
