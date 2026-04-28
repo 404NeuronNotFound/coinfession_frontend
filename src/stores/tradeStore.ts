@@ -26,6 +26,7 @@ import {
 interface TradeState {
   // Data
   trades: Trade[];
+  allTrades: Trade[]; // Store all trades for client-side pagination
   summary: TradeSummary | null;
   emotionTags: EmotionTag[];
   
@@ -72,6 +73,7 @@ const initialFilters: TradeFilters = {
 export const useTradeStore = create<TradeState>((set, get) => ({
   // Initial state
   trades: [],
+  allTrades: [],
   summary: null,
   emotionTags: [],
   filters: initialFilters,
@@ -89,8 +91,17 @@ export const useTradeStore = create<TradeState>((set, get) => ({
     set({ loading: true });
     try {
       const { filters } = get();
+      
+      // Fetch all trades without pagination to sort properly
+      // Always request page 1 with large page_size to get all trades
+      const filtersWithoutPagination = { 
+        ...filters, 
+        page: 1,  // Always fetch page 1 from backend
+        page_size: 1000  // Fetch large batch
+      };
+      
       const [tradesResponse, summaryResponse] = await Promise.all([
-        fetchTrades(filters),
+        fetchTrades(filtersWithoutPagination),
         fetchTradeSummary(filters),
       ]);
       
@@ -107,13 +118,21 @@ export const useTradeStore = create<TradeState>((set, get) => ({
         return new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime();
       });
       
+      // Apply client-side pagination
+      const page = filters.page || 1;
+      const pageSize = filters.page_size || 10;
+      const startIdx = (page - 1) * pageSize;
+      const endIdx = startIdx + pageSize;
+      const paginatedTrades = sortedTrades.slice(startIdx, endIdx);
+      
       set({
-        trades: sortedTrades,
+        allTrades: sortedTrades,
+        trades: paginatedTrades,
         summary: summaryResponse,
         pagination: {
-          count: tradesResponse.count,
-          next: tradesResponse.next,
-          previous: tradesResponse.previous,
+          count: sortedTrades.length,
+          next: endIdx < sortedTrades.length ? "next" : null,
+          previous: startIdx > 0 ? "previous" : null,
         },
         loading: false,
       });
