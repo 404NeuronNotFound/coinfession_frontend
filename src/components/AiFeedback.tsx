@@ -2,139 +2,52 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import DashboardHeader from "@/components/ui/DashboardHeader";
-import FeedbackPrompt from "@/components/ui/FeedbackPrompt";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Eye, Loader2 } from "lucide-react";
 import FeedbackCard from "@/components/ui/FeedbackCard";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
-
-interface Feedback {
-  id: string;
-  month: string;
-  date: string;
-  tradesAnalyzed: number;
-  emotionsTagged: number;
-  pnlMetrics: string;
-  scores: {
-    discipline: number;
-    riskManagement: number;
-    consistency: number;
-  };
-  whatYouAsked: string;
-  overallAssessment: string;
-  whatsWorking: string[];
-  whatsHurting: string[];
-  oneThingToFixInApril: string;
-  actionItems: string[];
-}
-
-const MOCK_FEEDBACKS: Feedback[] = [
-  {
-    id: "1",
-    month: "March 2026",
-    date: "Generated Mar 20 · 10 trades",
-    tradesAnalyzed: 10,
-    emotionsTagged: 8,
-    pnlMetrics: "+$780",
-    scores: {
-      discipline: 8,
-      riskManagement: 6,
-      consistency: 7,
-    },
-    whatYouAsked: "Analyze my March 2026 trading journal. Tell me what I'm doing wrong and what's actually working. Be direct.",
-    overallAssessment: "March is your best month in the last six. A 70% win rate with 10 trades is solid, and more importantly, your disciplined trades had a near-perfect record. You are capable of trading well. The problem is you keep interrupting yourself.",
-    whatsWorking: [
-      "Your planned entries are excellent. Every trade tagged 'Disciplined' or 'Patient' was profitable this month. You clearly know how to identify good setups when you wait for them.",
-      "Partial exits show maturity. Closing 60% of your SOL position at resistance while holding the rest is textbook good trading.",
-    ],
-    whatsHurting: [
-      "You sell panic-sold. This AVAX loss sits on Mar 10 was emotional, not strategic. It hit your stop, bounced 15% in 5 days. You placed that stop too tight and shook you out.",
-      "Position sizing is uneven. Your BTC trades are appropriately sized. Your altcoin entries are too big relative to their volatility. You're taking more on the coins you.",
-    ],
-    oneThingToFixInApril: "Widen your stop losses on altcoins by 1.5x and reduce position size by the same factor to keep risk constant. You'll get shaken out less and your stats will improve without changing your entry logic.",
-    actionItems: [
-      "Position sizing help →",
-      "Stop loss strategy →",
-      "Compare months →",
-    ],
-  },
-  {
-    id: "2",
-    month: "February 2026",
-    date: "Generated Feb 28 · 6 trades",
-    tradesAnalyzed: 6,
-    emotionsTagged: 5,
-    pnlMetrics: "+$520",
-    scores: {
-      discipline: 7,
-      riskManagement: 5,
-      consistency: 6,
-    },
-    whatYouAsked: "Review my February trades",
-    overallAssessment: "Solid month with good fundamentals. Your win rate is 67% which is above average.",
-    whatsWorking: [
-      "Consistent entry quality",
-      "Good trade selection",
-    ],
-    whatsHurting: [
-      "Some emotional exits",
-      "Position sizing inconsistency",
-    ],
-    oneThingToFixInApril: "Focus on consistent position sizing",
-    actionItems: [
-      "Review entries →",
-      "Risk management →",
-    ],
-  },
-  {
-    id: "3",
-    month: "January 2026",
-    date: "Generated Jan 31 · 5 trades",
-    tradesAnalyzed: 5,
-    emotionsTagged: 4,
-    pnlMetrics: "-$210",
-    scores: {
-      discipline: 5,
-      riskManagement: 4,
-      consistency: 4,
-    },
-    whatYouAsked: "Analyze January performance",
-    overallAssessment: "Challenging month with learning opportunities. Focus on discipline.",
-    whatsWorking: [
-      "Some good entries identified",
-    ],
-    whatsHurting: [
-      "Emotional trading",
-      "Poor risk management",
-      "Inconsistent execution",
-    ],
-    oneThingToFixInApril: "Implement strict trading rules",
-    actionItems: [
-      "Trading rules →",
-      "Emotion control →",
-    ],
-  },
-];
+import { useAIFeedbackStore } from "@/stores/aiFeedbackStore";
 
 export default function AiFeedback() {
   const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const d = theme === "dark";
   const { isAuthenticated } = useAuthStore();
-  const [expandedId, setExpandedId] = useState<string | null>("1");
+  
+  const {
+    feedbackList,
+    preview,
+    generating,
+    loadingList,
+    loadingPreview,
+    generateError,
+    expandedId,
+    loadFeedbackList,
+    loadPreview,
+    generate,
+    toggleExpanded,
+  } = useAIFeedbackStore();
 
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, router]);
+    if (!isAuthenticated) {
+      router.replace("/login");
+      return;
+    }
+    
+    loadFeedbackList();
+    loadPreview();
+  }, [isAuthenticated, router, loadFeedbackList, loadPreview]);
 
   if (!isAuthenticated) return null;
 
-  const currentMonth = {
-    month: "April 2026",
-    tradesAnalyzed: 8,
-    emotionsTagged: 7,
-    pnlMetrics: "+$413",
-    description: "AI will analyze your 8 trades, emotion tags, and P&L, and give you an unfiltered assessment.",
+  const formatPnL = (value: number) => {
+    const sign = value >= 0 ? "+" : "-";
+    return `${sign}$${Math.abs(value).toFixed(0)}`;
+  };
+
+  const formatWinRate = (value: number) => {
+    return `${Math.round(value)}%`;
   };
 
   return (
@@ -155,19 +68,125 @@ export default function AiFeedback() {
 
         {/* Current Month Feedback Prompt */}
         <section className="mb-6 sm:mb-8">
-          <FeedbackPrompt data={currentMonth} />
+          <div
+            className={`rounded-lg border p-6 sm:p-8 ${
+              d
+                ? "bg-muted/50 border-border"
+                : "bg-slate-50 border-slate-200"
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+                  Current Analysis
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  AI will analyze your {preview?.total_trades || 0} trades, emotion tags, and P&L, and give you an unfiltered assessment.
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 whitespace-nowrap"
+                  disabled
+                >
+                  <Eye className="w-4 h-4" />
+                  View Prompt
+                </Button>
+                <Button 
+                  className="gap-2 whitespace-nowrap"
+                  onClick={() => generate()}
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Generate Feedback
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+              <div className={`rounded p-3 sm:p-4 ${d ? "bg-background" : "bg-white"}`}>
+                <p className="text-xs text-muted-foreground mb-1">Trades Analyzed</p>
+                <p className="text-lg sm:text-xl font-semibold text-foreground">
+                  {loadingPreview ? "—" : preview?.total_trades || 0}
+                </p>
+              </div>
+              <div className={`rounded p-3 sm:p-4 ${d ? "bg-background" : "bg-white"}`}>
+                <p className="text-xs text-muted-foreground mb-1">Emotions Tagged</p>
+                <p className="text-lg sm:text-xl font-semibold text-foreground">
+                  {loadingPreview ? "—" : preview?.emotions_tagged || 0}
+                </p>
+              </div>
+              <div className={`rounded p-3 sm:p-4 ${d ? "bg-background" : "bg-white"}`}>
+                <p className="text-xs text-muted-foreground mb-1">Win Rate</p>
+                <p className="text-lg sm:text-xl font-semibold text-green-600">
+                  {loadingPreview ? "—" : preview ? formatWinRate(preview.win_rate) : "—"}
+                </p>
+              </div>
+            </div>
+
+            {/* Warning if not enough data */}
+            {preview && !preview.has_enough_data && (
+              <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-yellow-950/20 border-yellow-700/30" : "bg-yellow-50 border-yellow-200"}`}>
+                <p className={`text-sm ${d ? "text-yellow-200" : "text-yellow-800"}`}>
+                  Not enough data for meaningful analysis. Add more trades with emotion tags to get better feedback.
+                </p>
+              </div>
+            )}
+
+            {/* Generating state */}
+            {generating && (
+              <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-blue-950/20 border-blue-700/30" : "bg-blue-50 border-blue-200"}`}>
+                <p className={`text-sm ${d ? "text-blue-200" : "text-blue-800"}`}>
+                  Analyzing your trades... This may take 5-15 seconds.
+                </p>
+              </div>
+            )}
+
+            {/* Generate error */}
+            {generateError && (
+              <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-red-950/20 border-red-700/30" : "bg-red-50 border-red-200"}`}>
+                <p className={`text-sm ${d ? "text-red-200" : "text-red-800"}`}>
+                  {generateError}
+                </p>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Historical Feedback Cards */}
         <section className="space-y-4">
-          {MOCK_FEEDBACKS.map((feedback) => (
-            <FeedbackCard
-              key={feedback.id}
-              feedback={feedback}
-              isExpanded={expandedId === feedback.id}
-              onToggle={() => setExpandedId(expandedId === feedback.id ? null : feedback.id)}
-            />
-          ))}
+          {loadingList ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : feedbackList.length === 0 ? (
+            <div className={`rounded-lg border p-12 text-center ${d ? "bg-background border-border" : "bg-white border-slate-200"}`}>
+              <p className="text-muted-foreground">
+                No feedback generated yet. Click "Generate Feedback" above to get started.
+              </p>
+            </div>
+          ) : (
+            feedbackList.map((feedback) => (
+              <FeedbackCard
+                key={feedback.id}
+                feedback={feedback}
+                isExpanded={expandedId === feedback.id}
+                onToggle={() => toggleExpanded(feedback.id)}
+              />
+            ))
+          )}
         </section>
       </div>
     </main>
