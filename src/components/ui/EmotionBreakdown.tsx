@@ -6,6 +6,7 @@ interface EmotionStat {
   emotion: string;
   percentage: number;
   count: number;
+  color?: string;
 }
 
 interface EmotionBreakdownProps {
@@ -37,7 +38,7 @@ export default function EmotionBreakdown({
                   className="h-full rounded-full transition-all"
                   style={{
                     width: `${emotion.percentage}%`,
-                    backgroundColor: EMOTION_COLORS[emotion.emotion as keyof typeof EMOTION_COLORS] || '#64748b',
+                    backgroundColor: emotion.color || EMOTION_COLORS[emotion.emotion as keyof typeof EMOTION_COLORS] || '#64748b',
                   }}
                 />
               </div>
