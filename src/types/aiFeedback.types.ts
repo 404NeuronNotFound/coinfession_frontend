@@ -9,12 +9,19 @@ export interface AIFeedbackSection {
   body: string;
 }
 
+export interface AIFeedbackActionItem {
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
 export interface AIFeedbackParsed {
   overall: string;
   scores: AIFeedbackScores;
   whats_working: AIFeedbackSection[];
   whats_hurting: AIFeedbackSection[];
   one_thing_to_fix: string;
+  action_items?: AIFeedbackActionItem[];
 }
 
 export interface AIFeedbackRecord {

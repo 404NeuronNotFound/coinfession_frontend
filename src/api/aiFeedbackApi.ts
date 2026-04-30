@@ -42,19 +42,11 @@ export async function fetchAIFeedbackPreview(
 export async function generateAIFeedback(
   payload?: GeneratePayload
 ): Promise<AIFeedbackRecord> {
-  try {
-    return await apiFetch<AIFeedbackRecord>("/api/ai-feedback/generate/", {
-      method: "POST",
-      token: getAccessToken(),
-      body: JSON.stringify(payload ?? {}),
-    });
-  } catch (error: any) {
-    // Handle 503/502 errors for missing API key
-    if (error?.status === 503 || error?.status === 502) {
-      throw new Error(error?.message || "Service unavailable");
-    }
-    throw error;
-  }
+  return apiFetch<AIFeedbackRecord>("/api/ai-feedback/generate/", {
+    method: "POST",
+    token: getAccessToken(),
+    body: JSON.stringify(payload ?? {}),
+  });
 }
 
 export async function fetchAIFeedbackList(): Promise<AIFeedbackRecord[]> {

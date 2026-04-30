@@ -1,7 +1,7 @@
 "use client";
 
 import { useThemeStore } from "@/stores/themeStore";
-import { User, Lock, Sliders, Key, Tag, Settings, Download, AlertTriangle } from "lucide-react";
+import { User, Lock, Sliders, Tag, Settings, Download, AlertTriangle } from "lucide-react";
 
 interface SettingsTabsProps {
   activeTab: string;
@@ -20,12 +20,6 @@ const tabs = [
     label: "Security",
     icon: Lock,
     category: "ACCOUNT",
-  },
-  {
-    id: "apikeys",
-    label: "API Keys",
-    icon: Key,
-    category: "INTEGRATIONS",
   },
   {
     id: "coingecko",

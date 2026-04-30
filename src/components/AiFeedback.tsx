@@ -61,7 +61,7 @@ export default function AiFeedback() {
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Brutally honest analysis of your trading journal
+              Smart analysis of your trading patterns and emotions
             </p>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function AiFeedback() {
                   Current Analysis
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  AI will analyze your {preview?.total_trades || 0} trades, emotion tags, and P&L, and give you an unfiltered assessment.
+                  Analyze your {preview?.total_trades || 0} trades, emotion tags, and P&L to get actionable insights.
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap">
@@ -149,7 +149,7 @@ export default function AiFeedback() {
             {generating && (
               <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-blue-950/20 border-blue-700/30" : "bg-blue-50 border-blue-200"}`}>
                 <p className={`text-sm ${d ? "text-blue-200" : "text-blue-800"}`}>
-                  Analyzing your trades... This may take 5-15 seconds.
+                  Analyzing your trades... This should only take a moment.
                 </p>
               </div>
             )}

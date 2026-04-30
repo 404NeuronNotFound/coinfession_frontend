@@ -194,40 +194,47 @@ export default function FeedbackCard({
               )}
 
               {/* Action Items */}
-              <div>
-                <h4 className="text-sm font-semibold text-foreground mb-3">
-                  Action Items
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      isDark
-                        ? "bg-muted hover:bg-muted/80 text-foreground"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                    }`}
-                  >
-                    Position sizing help →
-                  </button>
-                  <button
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      isDark
-                        ? "bg-muted hover:bg-muted/80 text-foreground"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                    }`}
-                  >
-                    Stop loss strategy →
-                  </button>
-                  <button
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      isDark
-                        ? "bg-muted hover:bg-muted/80 text-foreground"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                    }`}
-                  >
-                    Compare months →
-                  </button>
+              {parsed.action_items && parsed.action_items.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3">
+                    Action Items
+                  </h4>
+                  <div className="space-y-3">
+                    {parsed.action_items.map((item, idx) => {
+                      const priorityColors = {
+                        high: isDark ? "bg-red-900/30 border-red-700/30" : "bg-red-50 border-red-200",
+                        medium: isDark ? "bg-yellow-900/30 border-yellow-700/30" : "bg-yellow-50 border-yellow-200",
+                        low: isDark ? "bg-blue-900/30 border-blue-700/30" : "bg-blue-50 border-blue-200",
+                      };
+                      
+                      const priorityBadgeColors = {
+                        high: "bg-red-600 text-white",
+                        medium: "bg-yellow-600 text-white",
+                        low: "bg-blue-600 text-white",
+                      };
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-lg border ${priorityColors[item.priority]}`}
+                        >
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <h5 className="text-sm font-semibold text-foreground">
+                              {item.title}
+                            </h5>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${priorityBadgeColors[item.priority]}`}>
+                              {item.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {item.description}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           ) : (
             <div>
