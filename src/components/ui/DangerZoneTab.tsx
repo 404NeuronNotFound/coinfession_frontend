@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useThemeStore } from "@/stores/themeStore";
+import { useDangerZoneStore } from "@/stores/dangerZoneStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useToast } from "@/hooks/useToast";
+import { Toast } from "./Toast";
+import { ConfirmationModal } from "./ConfirmationModal";
 import { Button } from "./button";
 import { AlertTriangle, RotateCcw, Trash2, Download, User } from "lucide-react";
 
@@ -19,36 +24,131 @@ interface DangerAction {
 export default function DangerZoneTab() {
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === "dark";
-  const [showConfirmDelete, setShowConfirmDelete] = useState<string | null>(null);
+  const { toast, showToast, hideToast } = useToast();
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    action: string | null;
+    title: string;
+    description: string;
+  }>({
+    isOpen: false,
+    action: null,
+    title: "",
+    description: "",
+  });
+
+  // Get auth and danger zone state
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const user = useAuthStore((state) => state.user);
+  const {
+    status,
+    processing,
+    accountDeleted,
+    loadStatus,
+    resetSnapshots,
+    clearReports,
+    deleteAIFeedback,
+    deleteTrades,
+    deleteUserAccount,
+  } = useDangerZoneStore();
+
+  // Load status on mount
+  useEffect(() => {
+    if (accessToken) {
+      loadStatus(accessToken);
+    }
+  }, [accessToken, loadStatus]);
 
   const handleExportData = () => {
-    console.log("Exporting all data");
+    // TODO: Implement export functionality
   };
 
-  const handleResetPortfolioSnapshots = () => {
-    console.log("Resetting portfolio snapshots");
-    setShowConfirmDelete(null);
+  const openConfirmModal = (action: string, title: string, description: string) => {
+    setConfirmModal({ isOpen: true, action, title, description });
   };
 
-  const handleClearMonthlyReportCache = () => {
-    console.log("Clearing monthly report cache");
-    setShowConfirmDelete(null);
+  const closeConfirmModal = () => {
+    setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
   };
 
-  const handleDeleteAIFeedback = () => {
-    console.log("Deleting all AI feedback");
-    setShowConfirmDelete(null);
+  const handleConfirmAction = async () => {
+    switch (confirmModal.action) {
+      case "reset-snapshots":
+        await handleResetPortfolioSnapshots();
+        break;
+      case "clear-reports":
+        await handleClearMonthlyReportCache();
+        break;
+      case "delete-ai-feedback":
+        await handleDeleteAIFeedback();
+        break;
+      case "delete-trades":
+        await handleDeleteAllTrades();
+        break;
+      case "delete-account":
+        await handleDeleteAccount();
+        break;
+    }
   };
 
-  const handleDeleteAllTrades = () => {
-    console.log("Deleting all trades");
-    setShowConfirmDelete(null);
+  const handleResetPortfolioSnapshots = async () => {
+    if (accessToken) {
+      await resetSnapshots(accessToken);
+      setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+      showToast("Portfolio snapshots reset successfully", "success", 3000);
+    }
   };
 
-  const handleDeleteAccount = () => {
-    console.log("Deleting account");
-    setShowConfirmDelete(null);
+  const handleClearMonthlyReportCache = async () => {
+    if (accessToken) {
+      await clearReports(accessToken);
+      setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+      showToast("Monthly report cache cleared successfully", "success", 3000);
+    }
   };
+
+  const handleDeleteAIFeedback = async () => {
+    if (accessToken) {
+      await deleteAIFeedback(accessToken, "delete_ai_feedback");
+      setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+      showToast("AI feedback deleted successfully", "success", 3000);
+    }
+  };
+
+  const handleDeleteAllTrades = async () => {
+    if (accessToken) {
+      await deleteTrades(accessToken, "delete_all_trades");
+      setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+      showToast("All trades deleted successfully", "success", 3000);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (accessToken && user?.username) {
+      await deleteUserAccount(accessToken, user.username);
+      setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+      showToast("Account deleted successfully", "success", 3000);
+    }
+  };
+
+  // Show farewell screen if account is deleted
+  if (accountDeleted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className={`text-center p-8 rounded-lg border ${isDark ? "bg-red-950/20 border-red-700/30" : "bg-red-50 border-red-200"}`}>
+          <h2 className={`text-2xl font-bold mb-4 ${isDark ? "text-red-200" : "text-red-900"}`}>
+            Account Deleted
+          </h2>
+          <p className={`mb-4 ${isDark ? "text-red-300" : "text-red-800"}`}>
+            Your account and all associated data have been permanently deleted.
+          </p>
+          <p className={`text-sm ${isDark ? "text-red-400" : "text-red-700"}`}>
+            Redirecting to login in 3 seconds...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const recoverableActions: DangerAction[] = [
     {
@@ -77,18 +177,18 @@ export default function DangerZoneTab() {
       title: "Delete all AI feedback",
       description: "Permanently deletes all 3 generated AI feedback reports. Your trades, emotions, and monthly report stats are not affected. You can regenerate feedback at any time.",
       icon: <Trash2 className="w-6 h-6" />,
-      count: "3 reports",
-      warning: "3 AI feedback reports will be permanently deleted.",
+      count: status ? `${status.ai_feedback_count} reports` : "— reports",
+      warning: `${status?.ai_feedback_count || "—"} AI feedback reports will be permanently deleted.`,
       isRecoverable: false,
       action: handleDeleteAIFeedback,
     },
     {
       id: "delete-trades",
       title: "Delete all trades",
-      description: "Permanently deletes all 39 trade records and their emotion tags. Monthly reports and AI feedback history are kept but will reference deleted data.",
+      description: `Permanently deletes all ${status?.trade_count || "—"} trade records and their emotion tags. Monthly reports and AI feedback history are kept but will reference deleted data.`,
       icon: <Trash2 className="w-6 h-6" />,
-      count: "39 trades",
-      warning: "39 trades and all linked emotion data will be permanently deleted. This cannot be undone.",
+      count: status ? `${status.trade_count} trades` : "— trades",
+      warning: `${status?.trade_count || "—"} trades and all linked emotion data will be permanently deleted. This cannot be undone.`,
       isRecoverable: false,
       action: handleDeleteAllTrades,
     },
@@ -96,6 +196,28 @@ export default function DangerZoneTab() {
 
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {toast.isVisible && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={3000}
+          onClose={hideToast}
+        />
+      )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        isDangerous={confirmModal.action?.includes("delete") || confirmModal.action?.includes("account")}
+        isLoading={processing !== null}
+        onConfirm={handleConfirmAction}
+        onCancel={closeConfirmModal}
+        confirmText={confirmModal.action?.includes("delete") ? "Delete" : "Confirm"}
+      />
+
       {/* Header */}
       <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-red-950/20 border-red-700/30" : "bg-red-50 border-red-200"}`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -153,33 +275,16 @@ export default function DangerZoneTab() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowConfirmDelete(action.id)}
+                onClick={() => openConfirmModal(
+                  action.id,
+                  action.title,
+                  action.warning || action.description
+                )}
+                disabled={processing !== null}
                 className="text-xs sm:text-sm"
               >
                 {action.title.split(" ").slice(0, 2).join(" ")}
               </Button>
-
-              {showConfirmDelete === action.id && (
-                <div className="mt-4 p-4 rounded-lg bg-yellow-50 border border-yellow-200">
-                  <p className="text-sm font-semibold text-yellow-900 mb-3">Are you sure?</p>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={action.action}
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                    >
-                      Yes, {action.title.toLowerCase()}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowConfirmDelete(null)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -232,35 +337,16 @@ export default function DangerZoneTab() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowConfirmDelete(action.id)}
+                onClick={() => openConfirmModal(
+                  action.id,
+                  action.title,
+                  action.warning || action.description
+                )}
+                disabled={processing !== null}
                 className="text-destructive hover:text-destructive text-xs sm:text-sm"
               >
                 {action.title.split(" ").slice(0, 2).join(" ")}
               </Button>
-
-              {showConfirmDelete === action.id && (
-                <div className={`mt-4 p-4 rounded-lg border ${isDark ? "bg-red-900/50 border-red-700" : "bg-red-100 border-red-300"}`}>
-                  <p className={`text-sm font-semibold mb-3 ${isDark ? "text-red-200" : "text-red-900"}`}>
-                    This cannot be undone. Are you absolutely sure?
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={action.action}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      Yes, {action.title.toLowerCase()}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowConfirmDelete(null)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -298,35 +384,16 @@ export default function DangerZoneTab() {
 
           <Button
             size="sm"
-            onClick={() => setShowConfirmDelete("delete-account")}
+            onClick={() => openConfirmModal(
+              "delete-account",
+              "Delete my account",
+              "This is permanent. Your account cannot be recovered. Are you absolutely sure?"
+            )}
+            disabled={processing !== null}
             className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
           >
             Delete account
           </Button>
-
-          {showConfirmDelete === "delete-account" && (
-            <div className={`mt-4 p-4 rounded-lg border ${isDark ? "bg-red-900/50 border-red-700" : "bg-red-100 border-red-300"}`}>
-              <p className={`text-sm font-semibold mb-3 ${isDark ? "text-red-200" : "text-red-900"}`}>
-                This is permanent. Your account cannot be recovered. Are you sure?
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={handleDeleteAccount}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Yes, delete my account
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowConfirmDelete(null)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import { useThemeStore } from "@/stores/themeStore";
 import { useEmotionTagStore } from "@/stores/emotionTagStore";
+import { useToast } from "@/hooks/useToast";
+import { Toast } from "./Toast";
 import { Button } from "./button";
 import { GripVertical, Trash2, Sparkles, Pencil, X, Check } from "lucide-react";
 
 export default function EmotionTagsTab() {
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === "dark";
+  const { toast, showToast, hideToast } = useToast();
   
   // Zustand store
   const {
@@ -53,8 +56,10 @@ export default function EmotionTagsTab() {
       // Clear form on success
       setNewTagName("");
       setNewTagColor("#4f8ef7");
-    } catch (error) {
-      // Errors are handled by the store
+      showToast(`Emotion tag "${newTagName.trim()}" created successfully`, "success", 3000);
+    } catch (error: any) {
+      const errorMsg = error?.message || "Failed to create emotion tag";
+      showToast(errorMsg, "error", 3000);
     }
   };
 
@@ -74,8 +79,11 @@ export default function EmotionTagsTab() {
     
     try {
       await updateTag(tagId, { name: editName.trim(), color: editColor });
-    } catch (error) {
-      // Errors are handled by the store
+      setEditingId(null);
+      showToast(`Emotion tag updated successfully`, "success", 3000);
+    } catch (error: any) {
+      const errorMsg = error?.message || "Failed to update emotion tag";
+      showToast(errorMsg, "error", 3000);
     }
   };
 
@@ -91,8 +99,15 @@ export default function EmotionTagsTab() {
   };
 
   const handleConfirmDelete = async (tagId: number) => {
-    await deleteTag(tagId);
-    setDeleteConfirmId(null);
+    const tagName = tags.find(t => t.id === tagId)?.name || "tag";
+    try {
+      await deleteTag(tagId);
+      setDeleteConfirmId(null);
+      showToast(`Emotion tag "${tagName}" deleted successfully`, "success", 3000);
+    } catch (error: any) {
+      const errorMsg = error?.message || "Failed to delete emotion tag";
+      showToast(errorMsg, "error", 3000);
+    }
   };
 
   const handleCancelDelete = () => {
@@ -103,8 +118,10 @@ export default function EmotionTagsTab() {
   const handleAddSuggestedTag = async (suggested: { name: string; color: string }) => {
     try {
       await addSuggestedTag(suggested);
-    } catch (error) {
-      // Errors are handled by the store
+      showToast(`Suggested tag "${suggested.name}" added successfully`, "success", 3000);
+    } catch (error: any) {
+      const errorMsg = error?.message || "Failed to add suggested tag";
+      showToast(errorMsg, "error", 3000);
     }
   };
 
@@ -133,6 +150,15 @@ export default function EmotionTagsTab() {
 
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {toast.isVisible && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={3000}
+          onClose={hideToast}
+        />
+      )}
       {/* Header */}
       <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-background border-border" : "bg-white border-slate-200"}`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

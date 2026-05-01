@@ -168,6 +168,11 @@ export function LogTradeDrawer() {
       }
     }
 
+    // Emotion tags validation
+    if (selectedEmotions.length === 0) {
+      newErrors.emotions = "Please select at least one emotion tag";
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -487,7 +492,7 @@ export function LogTradeDrawer() {
             {/* Emotion Tags */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">
-                Emotion Tags
+                Emotion Tags <span className="text-destructive">*</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {emotionTags.map((tag) => (
@@ -501,6 +506,9 @@ export function LogTradeDrawer() {
                   </Badge>
                 ))}
               </div>
+              {errors.emotions && (
+                <p className="text-xs text-destructive mt-1">{errors.emotions}</p>
+              )}
             </div>
 
             {/* Notes */}

@@ -15,13 +15,27 @@ export default function CumulativePnLChart({ data }: CumulativePnLChartProps) {
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === 'dark';
   
+  // Handle empty or single data point
+  if (!data || data.length === 0) {
+    return (
+      <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
+        <h3 className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-6">
+          Cumulative P&L Over Time
+        </h3>
+        <div className="h-48 sm:h-56 flex items-center justify-center text-muted-foreground">
+          No data available
+        </div>
+      </div>
+    );
+  }
+  
   const maxPnL = Math.max(...data.map(d => d.pnl));
   const minPnL = 0;
-  const range = maxPnL - minPnL;
+  const range = maxPnL - minPnL || 1; // Prevent division by zero
 
   const points = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * 100;
-    const y = 100 - ((d.pnl - minPnL) / range) * 80;
+    const x = data.length === 1 ? 50 : (i / (data.length - 1)) * 100;
+    const y = range === 0 ? 50 : 100 - ((d.pnl - minPnL) / range) * 80;
     return { x, y, ...d };
   });
 

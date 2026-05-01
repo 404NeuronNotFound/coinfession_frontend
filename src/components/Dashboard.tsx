@@ -300,7 +300,7 @@ export default function DashboardPage() {
             />
 
             {/* AI Feedback */}
-            {aiSnippet && (
+            {aiSnippet && aiSnippet.overall && (
               <div className="flex-1 flex flex-col">
                 <AIFeedbackCard
                   title="AI Feedback"
