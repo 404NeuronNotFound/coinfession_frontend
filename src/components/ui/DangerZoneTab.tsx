@@ -44,6 +44,8 @@ export default function DangerZoneTab() {
     status,
     processing,
     accountDeleted,
+    successMessage,
+    error,
     loadStatus,
     resetSnapshots,
     clearReports,
@@ -58,6 +60,19 @@ export default function DangerZoneTab() {
       loadStatus(accessToken);
     }
   }, [accessToken, loadStatus]);
+
+  // Show toast when store messages change
+  useEffect(() => {
+    if (successMessage) {
+      showToast(successMessage, "success", 3000);
+    }
+  }, [successMessage, showToast]);
+
+  useEffect(() => {
+    if (error) {
+      showToast(error, "error", 3000);
+    }
+  }, [error, showToast]);
 
   const handleExportData = () => {
     // TODO: Implement export functionality
@@ -95,7 +110,6 @@ export default function DangerZoneTab() {
     if (accessToken) {
       await resetSnapshots(accessToken);
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
-      showToast("Portfolio snapshots reset successfully", "success", 3000);
     }
   };
 
@@ -103,7 +117,6 @@ export default function DangerZoneTab() {
     if (accessToken) {
       await clearReports(accessToken);
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
-      showToast("Monthly report cache cleared successfully", "success", 3000);
     }
   };
 
@@ -111,7 +124,6 @@ export default function DangerZoneTab() {
     if (accessToken) {
       await deleteAIFeedback(accessToken, "DELETE");
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
-      showToast("AI feedback deleted successfully", "success", 3000);
     }
   };
 
@@ -119,7 +131,6 @@ export default function DangerZoneTab() {
     if (accessToken) {
       await deleteTrades(accessToken, "DELETE ALL");
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
-      showToast("All trades deleted successfully", "success", 3000);
     }
   };
 
@@ -127,7 +138,6 @@ export default function DangerZoneTab() {
     if (accessToken && user?.username) {
       await deleteUserAccount(accessToken, user.username);
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
-      showToast("Account deleted successfully", "success", 3000);
     }
   };
 
