@@ -109,7 +109,7 @@ export default function DangerZoneTab() {
 
   const handleDeleteAIFeedback = async () => {
     if (accessToken) {
-      await deleteAIFeedback(accessToken, "delete_ai_feedback");
+      await deleteAIFeedback(accessToken, "DELETE");
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
       showToast("AI feedback deleted successfully", "success", 3000);
     }
@@ -117,7 +117,7 @@ export default function DangerZoneTab() {
 
   const handleDeleteAllTrades = async () => {
     if (accessToken) {
-      await deleteTrades(accessToken, "delete_all_trades");
+      await deleteTrades(accessToken, "DELETE ALL");
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
       showToast("All trades deleted successfully", "success", 3000);
     }
