@@ -101,7 +101,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
         {/* Header */}
         <DashboardHeader
         title="Trade Log"
-        subtitle="Complete trade history · April 2026"
+        subtitle="Spot trade history · April 2026"
         onLogTrade={handleLogTrade}
         onExport={handleExport}
       />
