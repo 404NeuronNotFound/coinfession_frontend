@@ -27,8 +27,8 @@ export default function EmotionBreakdown({
       </h3>
 
       <div className="space-y-4">
-        {emotions.map((emotion) => (
-          <div key={emotion.emotion} className="flex items-center justify-between">
+        {emotions.map((emotion, index) => (
+          <div key={`${emotion.emotion}-${index}`} className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <span className="text-sm font-medium text-foreground">
                 {emotion.emotion}
