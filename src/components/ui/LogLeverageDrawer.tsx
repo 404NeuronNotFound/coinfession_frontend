@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useThemeStore } from "@/stores/themeStore";
 import { useTradeStore } from "@/stores/tradeStore";
 import { Button } from "./button";
@@ -14,7 +14,17 @@ export function LogLeverageDrawer() {
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === "dark";
   
-  const { drawerOpen, editingTrade, emotionTags, saveTrade, closeDrawer } = useTradeStore();
+  const { drawerOpen, editingTrade, emotionTags: rawEmotionTags, saveTrade, closeDrawer } = useTradeStore();
+
+  // Deduplicate emotion tags by ID (in case of database duplicates)
+  const emotionTags = React.useMemo(() => {
+    const seen = new Set<number>();
+    return rawEmotionTags.filter((tag) => {
+      if (seen.has(tag.id)) return false;
+      seen.add(tag.id);
+      return true;
+    });
+  }, [rawEmotionTags]);
 
   // Form state
   const [coinQuery, setCoinQuery] = useState("");
@@ -222,7 +232,9 @@ export function LogLeverageDrawer() {
 
       const payload: any = {
         coin_id: coinId!,
+        trade_type: positionType === 'long' ? 'buy' : 'sell', // Map position_type to trade_type
         position_type: positionType,
+        quantity: 0, // Placeholder - backend will auto-calculate for long/short
         leverage: leverage,
         entry_price: parseFloat(entryPrice),
         exit_price: !isOpen && exitPrice ? parseFloat(exitPrice) : null,
@@ -245,7 +257,25 @@ export function LogLeverageDrawer() {
         await loadOpenPositions();
       }
     } catch (error: any) {
-      if (error?.fieldErrors) {
+      if (error?.response?.data) {
+        // Backend validation errors
+        const backendErrors = error.response.data;
+        const formattedErrors: Record<string, string> = {};
+        
+        // Convert backend error format to form error format
+        Object.keys(backendErrors).forEach((key) => {
+          const errorValue = backendErrors[key];
+          if (Array.isArray(errorValue)) {
+            formattedErrors[key] = errorValue[0];
+          } else if (typeof errorValue === 'string') {
+            formattedErrors[key] = errorValue;
+          } else {
+            formattedErrors[key] = JSON.stringify(errorValue);
+          }
+        });
+        
+        setErrors(formattedErrors);
+      } else if (error?.fieldErrors) {
         setErrors(error.fieldErrors);
       } else if (error?.message) {
         setErrors({ general: error.message });
