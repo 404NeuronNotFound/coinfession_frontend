@@ -239,3 +239,16 @@ export async function exportTradesCsv(): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * GET /api/trades/open-positions/
+ * Fetch all open long/short positions with unrealized P&L
+ */
+export async function fetchOpenPositions(): Promise<any> {
+  const token = getAccessToken();
+  
+  return apiFetch<any>("/api/trades/open-positions/", {
+    method: "GET",
+    token,
+  });
+}

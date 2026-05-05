@@ -13,6 +13,7 @@ import type {
   EmotionTag,
   CreateTradePayload,
   UpdateTradePayload,
+  OpenPosition,
 } from "@/types/tradeTypes";
 import {
   fetchTrades,
@@ -21,6 +22,7 @@ import {
   createTrade as apiCreateTrade,
   updateTrade as apiUpdateTrade,
   deleteTrade as apiDeleteTrade,
+  fetchOpenPositions,
 } from "@/api/tradeApi";
 
 interface TradeState {
@@ -29,6 +31,15 @@ interface TradeState {
   allTrades: Trade[]; // Store all trades for client-side pagination
   summary: TradeSummary | null;
   emotionTags: EmotionTag[];
+  
+  // Open Positions
+  openPositions: OpenPosition[];
+  openPositionsMeta: {
+    total_collateral: number;
+    total_unrealized_pnl: number | null;
+    prices_live: boolean;
+  } | null;
+  loadingOpenPositions: boolean;
   
   // Filters
   filters: TradeFilters;
@@ -48,6 +59,7 @@ interface TradeState {
   // Actions
   loadTrades: () => Promise<void>;
   loadEmotionTags: () => Promise<void>;
+  loadOpenPositions: () => Promise<void>;
   updateFilter: (key: keyof TradeFilters, value: string | number) => void;
   clearFilters: () => void;
   setPage: (page: number) => void;
@@ -76,6 +88,9 @@ export const useTradeStore = create<TradeState>((set, get) => ({
   allTrades: [],
   summary: null,
   emotionTags: [],
+  openPositions: [],
+  openPositionsMeta: null,
+  loadingOpenPositions: false,
   filters: initialFilters,
   pagination: {
     count: 0,
@@ -232,6 +247,47 @@ export const useTradeStore = create<TradeState>((set, get) => ({
       await get().loadTrades();
     } catch (error) {
       console.error("Failed to delete trade:", error);
+    }
+  },
+
+  // Load open positions
+  loadOpenPositions: async () => {
+    set({ loadingOpenPositions: true });
+    try {
+      const response = await fetchOpenPositions();
+      
+      // Transform response to match expected format
+      const openPositions = response.map((pos: any) => ({
+        ...pos,
+        days_open: Math.floor((Date.now() - new Date(pos.trade_date).getTime()) / (1000 * 60 * 60 * 24)),
+      }));
+      
+      // Calculate totals
+      const total_collateral = openPositions.reduce((sum: number, pos: any) => sum + pos.collateral, 0);
+      const total_unrealized_pnl = openPositions.reduce((sum: number, pos: any) => {
+        return sum + (pos.unrealized_pnl || 0);
+      }, 0);
+      const prices_live = openPositions.every((pos: any) => pos.current_price !== null);
+      
+      set({
+        openPositions,
+        openPositionsMeta: {
+          total_collateral,
+          total_unrealized_pnl,
+          prices_live,
+        },
+        loadingOpenPositions: false,
+      });
+    } catch (error) {
+      console.error("Failed to load open positions:", error);
+      set({ loadingOpenPositions: false });
+      
+      // Redirect to login on 401
+      if ((error as { status?: number }).status === 401) {
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      }
     }
   },
 }));

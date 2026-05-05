@@ -35,8 +35,45 @@ export interface Trade {
   notes: string | null;
   emotions: TradeEmotion[];
   realized_pnl: number | null;
+  roi: number | null;
   is_open: boolean;
   created_at: string; // ISO 8601
+  // Long/Short fields
+  position_type: 'spot' | 'long' | 'short';
+  leverage: number;
+  entry_price: number | null;
+  exit_price: number | null;
+  collateral: number | null;
+  liquidation_price: number | null;
+  funding_fees: number;
+  close_date: string | null;
+}
+
+export interface OpenPosition {
+  id: number;
+  coin: Coin;
+  position_type: 'long' | 'short';
+  leverage: number;
+  entry_price: number;
+  current_price: number | null;
+  collateral: number;
+  quantity: number;
+  unrealized_pnl: number | null;
+  unrealized_roi: number | null;
+  liquidation_price: number | null;
+  distance_to_liquidation: number | null;
+  funding_fees: number;
+  trade_date: string;
+  emotions: TradeEmotion[];
+  notes: string;
+  days_open: number;
+}
+
+export interface OpenPositionsResponse {
+  open_positions: OpenPosition[];
+  total_collateral: number;
+  total_unrealized_pnl: number | null;
+  prices_live: boolean;
 }
 
 export interface TradeFilters {
@@ -73,13 +110,22 @@ export interface PaginatedResponse<T> {
 export interface CreateTradePayload {
   coin_id: number;
   trade_type: "buy" | "sell";
-  quantity: number;
-  buy_price: number | null;
-  sell_price: number | null;
+  quantity?: number;
+  buy_price?: number | null;
+  sell_price?: number | null;
   fee: number;
   trade_date: string; // ISO 8601
   notes: string;
   emotion_tag_ids: number[];
+  // Long/Short fields
+  position_type?: 'spot' | 'long' | 'short';
+  leverage?: number;
+  entry_price?: number | null;
+  exit_price?: number | null;
+  collateral?: number | null;
+  funding_fees?: number;
+  is_open?: boolean;
+  close_date?: string | null;
 }
 
 export type UpdateTradePayload = Partial<CreateTradePayload>;
