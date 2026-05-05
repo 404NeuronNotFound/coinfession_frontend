@@ -11,6 +11,7 @@ import { Moon, Sun, X, Settings } from 'lucide-react';
 import {
   DashboardIcon,
   TradeLogIcon,
+  OpenPositionsIcon,
   PortfolioIcon,
   PnLIcon,
   EmotionIcon,
@@ -21,6 +22,7 @@ import {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
   { href: '/tradelog', label: 'Trade Log', Icon: TradeLogIcon },
+  { href: '/open-positions', label: 'Open Positions', Icon: OpenPositionsIcon },
   { href: '/portfolio', label: 'Portfolio', Icon: PortfolioIcon },
   { href: '/pnl-analysis', label: 'P&L Analysis', Icon: PnLIcon },
   { href: '/emotionjournal', label: 'Emotion Journal', Icon: EmotionIcon },
