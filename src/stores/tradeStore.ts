@@ -107,29 +107,36 @@ export const useTradeStore = create<TradeState>((set, get) => ({
     try {
       const { filters } = get();
       
-      // Fetch all trades without pagination to sort properly
+      // Fetch all SPOT trades only (exclude long/short positions)
       // Always request page 1 with large page_size to get all trades
-      const filtersWithoutPagination = { 
+      const filtersWithSpotOnly = { 
         ...filters, 
         page: 1,  // Always fetch page 1 from backend
-        page_size: 1000  // Fetch large batch
+        page_size: 1000,  // Fetch large batch
+        position_type: 'spot'  // Only fetch spot trades
       };
       
       const [tradesResponse, summaryResponse] = await Promise.all([
-        fetchTrades(filtersWithoutPagination),
-        fetchTradeSummary(filters),
+        fetchTrades(filtersWithSpotOnly),
+        fetchTradeSummary(filtersWithSpotOnly),
       ]);
       
-      // Sort trades: open trades first, then closed trades by date
+      // Sort trades: open/unsold trades first (at the top), then closed trades by date
       const sortedTrades = [...tradesResponse.results].sort((a, b) => {
-        const aIsOpen = a.is_open;
-        const bIsOpen = b.is_open;
+        // Determine if trade is open (not yet sold)
+        const aIsOpen = a.is_open || a.sell_price === null || a.realized_pnl === null;
+        const bIsOpen = b.is_open || b.sell_price === null || b.realized_pnl === null;
         
         // If one is open and the other is closed, open comes first
         if (aIsOpen && !bIsOpen) return -1;
         if (!aIsOpen && bIsOpen) return 1;
         
-        // If both are open or both are closed, sort by date (newest first)
+        // If both are open, sort by date (oldest first - so earliest buys appear at top)
+        if (aIsOpen && bIsOpen) {
+          return new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime();
+        }
+        
+        // If both are closed, sort by date (newest first)
         return new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime();
       });
       
@@ -255,8 +262,16 @@ export const useTradeStore = create<TradeState>((set, get) => ({
     try {
       const response = await fetchOpenPositions();
       
+      // Extract results array from paginated response
+      const results = response.results || response;
+      
+      // Filter to only include long/short positions (exclude spot)
+      const leveragePositions = results.filter((pos: any) => 
+        pos.position_type === 'long' || pos.position_type === 'short'
+      );
+      
       // Transform response to match expected format
-      const openPositions = response.map((pos: any) => ({
+      const openPositions = leveragePositions.map((pos: any) => ({
         ...pos,
         days_open: Math.floor((Date.now() - new Date(pos.trade_date).getTime()) / (1000 * 60 * 60 * 24)),
       }));

@@ -242,12 +242,13 @@ export async function exportTradesCsv(): Promise<void> {
 
 /**
  * GET /api/trades/open-positions/
- * Fetch all open long/short positions with unrealized P&L
+ * Fetch all long/short positions (both open and closed) with unrealized P&L
  */
 export async function fetchOpenPositions(): Promise<any> {
   const token = getAccessToken();
   
-  return apiFetch<any>("/api/trades/open-positions/", {
+  // Fetch all long/short trades (not just open ones)
+  return apiFetch<any>("/api/trades/?position_type=long,short&page_size=1000", {
     method: "GET",
     token,
   });
