@@ -235,7 +235,6 @@ export const useTradeStore = create<TradeState>((set, get) => ({
       get().closeDrawer();
       await get().loadTrades();
     } catch (error) {
-      console.error("Failed to save trade:", error);
       throw error; // Re-throw so the form can show validation errors
     }
   },

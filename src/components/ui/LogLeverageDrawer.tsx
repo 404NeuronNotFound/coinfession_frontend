@@ -245,8 +245,6 @@ export function LogLeverageDrawer() {
         await loadOpenPositions();
       }
     } catch (error: any) {
-      console.error("Failed to save position:", error);
-      
       if (error?.fieldErrors) {
         setErrors(error.fieldErrors);
       } else if (error?.message) {
