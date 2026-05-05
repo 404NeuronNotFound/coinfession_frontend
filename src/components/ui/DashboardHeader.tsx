@@ -8,6 +8,7 @@ interface DashboardHeaderProps {
   onExport?: () => void;
   onLogTrade?: () => void;
   onMenu?: () => void;
+  logTradeButtonText?: string;
 }
 
 export default function DashboardHeader({
@@ -16,6 +17,7 @@ export default function DashboardHeader({
   onExport,
   onLogTrade,
   onMenu,
+  logTradeButtonText = '+ Log Trade',
 }: DashboardHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
@@ -37,7 +39,7 @@ export default function DashboardHeader({
         )}
         {onLogTrade && (
           <Button onClick={onLogTrade} size="sm" className="text-xs sm:text-sm">
-            + Log Trade
+            {logTradeButtonText}
           </Button>
         )}
         {onMenu && (
