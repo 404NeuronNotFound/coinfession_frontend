@@ -100,7 +100,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
       <div className="w-full space-y-6 font-sans">
         {/* Header */}
         <DashboardHeader
-        title="Trade Log"
+        title="Spot Trades"
         subtitle="Spot trade history · April 2026"
         onLogTrade={handleLogTrade}
         onExport={handleExport}

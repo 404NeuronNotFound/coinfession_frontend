@@ -21,8 +21,8 @@ import {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', Icon: DashboardIcon },
-  { href: '/tradelog', label: 'Trade Log', Icon: TradeLogIcon },
-  { href: '/open-positions', label: 'Open Positions', Icon: OpenPositionsIcon },
+  { href: '/spottrades', label: 'Spot Trades', Icon: TradeLogIcon },
+  { href: '/leveragetrades', label: 'Leverage Trades', Icon: OpenPositionsIcon },
   { href: '/portfolio', label: 'Portfolio', Icon: PortfolioIcon },
   { href: '/pnl-analysis', label: 'P&L Analysis', Icon: PnLIcon },
   { href: '/emotionjournal', label: 'Emotion Journal', Icon: EmotionIcon },

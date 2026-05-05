@@ -6,13 +6,15 @@ import { useAuthStore } from "@/stores/authStore";
 import { useTradeStore } from "@/stores/tradeStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getCoinColor } from "@/lib/coinColors";
 import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import UserLayout from "@/layouts/UserLayout";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import { LogLeverageDrawer } from "@/components/ui/LogLeverageDrawer";
 
-export default function OpenPositionsPage() {
+export default function LeverageTradesPage() {
   const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const isDark = theme === "dark";
@@ -33,6 +35,8 @@ export default function OpenPositionsPage() {
   const [pnlFilter, setPnlFilter] = React.useState("");
   const [dateFrom, setDateFrom] = React.useState("");
   const [dateTo, setDateTo] = React.useState("");
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize] = React.useState(10);
 
   // Filter positions based on filters
   const filteredPositions = React.useMemo(() => {
@@ -69,6 +73,17 @@ export default function OpenPositionsPage() {
       return true;
     });
   }, [openPositions, searchTerm, positionTypeFilter, emotionFilter, pnlFilter, dateFrom, dateTo]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPositions.length / pageSize);
+  const startIdx = (currentPage - 1) * pageSize;
+  const endIdx = Math.min(startIdx + pageSize, filteredPositions.length);
+  const paginatedPositions = filteredPositions.slice(startIdx, endIdx);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, positionTypeFilter, emotionFilter, pnlFilter, dateFrom, dateTo]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -159,8 +174,8 @@ export default function OpenPositionsPage() {
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24 font-sans">
           {/* Header */}
           <DashboardHeader
-            title="Open Positions"
-            subtitle={`${filteredPositions.length} active long/short position${filteredPositions.length !== 1 ? "s" : ""} · April 2026`}
+            title="Leverage Trades"
+            subtitle={`${filteredPositions.length} leverage trade${filteredPositions.length !== 1 ? "s" : ""} (long/short) · April 2026`}
             onLogTrade={handleLogTrade}
             logTradeButtonText="+ Log Position"
           />
@@ -267,7 +282,7 @@ export default function OpenPositionsPage() {
           {loadingOpenPositions ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-muted-foreground">
-                Loading open positions...
+                Loading leverage trades...
               </div>
             </div>
           ) : (
@@ -320,203 +335,212 @@ export default function OpenPositionsPage() {
                       {openPositions.length}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      open
+                      total
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Positions List */}
+              {/* Positions Table */}
               {filteredPositions.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
                     {openPositions.length === 0
-                      ? "No open positions. Log a long or short trade to track it here."
+                      ? "No leverage trades yet. Log a long or short position to track it here."
                       : "No positions match your filters. Try adjusting them."}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {filteredPositions.map((position) => {
-                    const showLiquidationWarning =
-                      position.distance_to_liquidation !== null &&
-                      position.distance_to_liquidation < 10;
+                <>
+                  <div className="rounded-lg border border-border bg-card overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-b border-border hover:bg-transparent">
+                            <TableHead className="text-left text-xs sm:text-sm font-semibold text-muted-foreground">COIN</TableHead>
+                            <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground">TYPE</TableHead>
+                            <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground">COLLATERAL</TableHead>
+                            <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground">ENTRY</TableHead>
+                            <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground hidden md:table-cell">LIQUIDATION</TableHead>
+                            <TableHead className="text-right text-xs sm:text-sm font-semibold text-muted-foreground">UNREALIZED P&L</TableHead>
+                            <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground hidden lg:table-cell">DAYS OPEN</TableHead>
+                            <TableHead className="text-xs sm:text-sm font-semibold text-muted-foreground"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedPositions.map((position) => {
+                            const showLiquidationWarning =
+                              position.distance_to_liquidation != null &&
+                              position.distance_to_liquidation < 10;
 
-                    return (
-                      <div
-                        key={position.id}
-                        className="p-4 rounded-lg border border-border bg-card"
-                      >
-                        {/* Header Row */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-                              style={{
-                                backgroundColor: getCoinColor(
-                                  position.coin.symbol
-                                ),
-                              }}
-                            >
-                              {position.coin.symbol[0]}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <Badge
-                                  variant={
-                                    position.position_type === "long"
-                                      ? "secondary"
-                                      : "default"
-                                  }
-                                  className="text-xs uppercase"
-                                >
-                                  {position.position_type}{" "}
-                                  {formatLeverage(position.leverage)}
-                                </Badge>
-                                <span className="text-sm font-medium text-foreground">
-                                  {position.coin.symbol}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {position.coin.name}
-                                </span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {formatDaysOpen(position.days_open)}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="text-right">
-                            {position.unrealized_pnl !== null ? (
-                              <>
-                                <div
-                                  className={`text-lg font-black ${
-                                    position.unrealized_pnl >= 0
-                                      ? "text-green-600"
-                                      : "text-red-600"
-                                  }`}
-                                >
-                                  {position.unrealized_pnl >= 0 ? "+" : ""}
-                                  {fmtDec(position.unrealized_pnl)}
-                                </div>
-                                {position.unrealized_roi !== null && (
-                                  <div
-                                    className={`text-xs ${
-                                      position.unrealized_roi >= 0
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                    }`}
-                                  >
-                                    ({position.unrealized_roi >= 0 ? "+" : ""}
-                                    {position.unrealized_roi.toFixed(1)}%)
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <div className="text-sm text-muted-foreground">
-                                Live price unavailable
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Liquidation Warning */}
-                        {showLiquidationWarning && (
-                          <div className="mb-4 p-2 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                            <p className="text-xs text-amber-800 dark:text-amber-200">
-                              ⚠️ Liquidation in{" "}
-                              {position.distance_to_liquidation!.toFixed(1)}% —
-                              price at risk
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Details Row */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Collateral
-                            </div>
-                            <div className="text-sm font-medium text-foreground">
-                              {fmt(position.collateral)}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Entry Price
-                            </div>
-                            <div className="text-sm font-medium text-foreground">
-                              {fmtDec(position.entry_price)}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Liquidation
-                            </div>
-                            <div className="text-sm font-medium text-foreground">
-                              {position.liquidation_price
-                                ? `${fmtDec(position.liquidation_price)}`
-                                : "—"}
-                            </div>
-                            {position.distance_to_liquidation !== null && (
-                              <div
-                                className={`text-xs ${
-                                  position.distance_to_liquidation < 10
-                                    ? "text-amber-600"
-                                    : "text-muted-foreground"
+                            return (
+                              <TableRow
+                                key={position.id}
+                                className={`border-b border-border hover:bg-muted/50 cursor-pointer ${
+                                  showLiquidationWarning ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''
                                 }`}
+                                onClick={() => handleClosePosition(position)}
                               >
-                                {position.distance_to_liquidation.toFixed(1)}%
-                                away
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">
-                              Funding Fees
-                            </div>
-                            <div className="text-sm font-medium text-foreground">
-                              {fmtDec(position.funding_fees)}
-                            </div>
-                          </div>
-                        </div>
+                                {/* Coin */}
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                                      style={{ backgroundColor: getCoinColor(position.coin.symbol) }}
+                                    >
+                                      {position.coin.symbol[0]}
+                                    </div>
+                                    <div>
+                                      <div className="text-xs sm:text-sm font-medium text-foreground">{position.coin.symbol}</div>
+                                      <div className="text-xs text-muted-foreground hidden sm:block">{position.coin.name}</div>
+                                    </div>
+                                  </div>
+                                </TableCell>
 
-                        {/* Emotions */}
-                        {position.emotions.length > 0 && (
-                          <div className="mb-3 flex flex-wrap gap-1">
-                            {position.emotions.map((emotion) => (
-                              <Badge
-                                key={emotion.id}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {emotion.emotion_tag.name}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                                {/* Type & Leverage */}
+                                <TableCell>
+                                  <Badge
+                                    variant={position.position_type === "long" ? "secondary" : "default"}
+                                    className="text-xs uppercase"
+                                  >
+                                    {position.position_type} {formatLeverage(position.leverage)}
+                                  </Badge>
+                                </TableCell>
 
-                        {/* Notes */}
-                        {position.notes && (
-                          <div className="mb-3 text-xs text-muted-foreground">
-                            {position.notes}
-                          </div>
-                        )}
+                                {/* Collateral */}
+                                <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">
+                                  {fmt(position.collateral)}
+                                </TableCell>
 
-                        {/* Footer */}
-                        <div className="flex justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleClosePosition(position)}
-                          >
-                            Close Position
-                          </Button>
-                        </div>
+                                {/* Entry Price */}
+                                <TableCell className="text-right text-xs sm:text-sm font-mono text-foreground">
+                                  {fmtDec(position.entry_price)}
+                                </TableCell>
+
+                                {/* Liquidation */}
+                                <TableCell className="text-right text-xs sm:text-sm font-mono hidden md:table-cell">
+                                  {position.liquidation_price ? (
+                                    <div>
+                                      <div className="text-foreground">{fmtDec(position.liquidation_price)}</div>
+                                      {position.distance_to_liquidation != null && (
+                                        <div
+                                          className={`text-xs ${
+                                            position.distance_to_liquidation < 10
+                                              ? "text-amber-600"
+                                              : "text-muted-foreground"
+                                          }`}
+                                        >
+                                          {position.distance_to_liquidation.toFixed(1)}% away
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </TableCell>
+
+                                {/* Unrealized P&L */}
+                                <TableCell className="text-right text-xs sm:text-sm font-mono">
+                                  {position.unrealized_pnl != null ? (
+                                    <div>
+                                      <div
+                                        className={`font-semibold ${
+                                          position.unrealized_pnl >= 0
+                                            ? "text-green-600"
+                                            : "text-red-600"
+                                        }`}
+                                      >
+                                        {position.unrealized_pnl >= 0 ? "+" : ""}
+                                        {fmtDec(position.unrealized_pnl)}
+                                      </div>
+                                      {position.unrealized_roi != null && (
+                                        <div
+                                          className={`text-xs ${
+                                            position.unrealized_roi >= 0
+                                              ? "text-green-600"
+                                              : "text-red-600"
+                                          }`}
+                                        >
+                                          ({position.unrealized_roi >= 0 ? "+" : ""}
+                                          {position.unrealized_roi.toFixed(1)}%)
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">—</span>
+                                  )}
+                                </TableCell>
+
+                                {/* Days Open */}
+                                <TableCell className="text-xs hidden lg:table-cell text-muted-foreground">
+                                  {formatDaysOpen(position.days_open)}
+                                </TableCell>
+
+                                {/* Action */}
+                                <TableCell>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleClosePosition(position);
+                                    }}
+                                    className="text-xs"
+                                  >
+                                    Close
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      Showing {filteredPositions.length > 0 ? startIdx + 1 : 0}–{endIdx} of {filteredPositions.length} positions
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 sm:h-10 sm:w-10"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <div className="flex gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          const pageNum = i + 1;
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNum)}
+                              className="w-8 h-8 p-0 text-xs"
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8 sm:h-10 sm:w-10"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </>
           )}
