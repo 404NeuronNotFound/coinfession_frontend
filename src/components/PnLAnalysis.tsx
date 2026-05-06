@@ -20,10 +20,10 @@ export default function PnLAnalysis() {
   const theme = useThemeStore((state) => state.theme);
   const d = theme === "dark";
   const { isAuthenticated } = useAuthStore();
-  const [timeframe, setTimeframe] = useState("1M");
+  const [timeframe, setTimeframe] = useState("All");
   
   // P&L Analysis store
-  const { data, loading, error, loadPnlAnalysis } = usePnlAnalysisStore();
+  const { data, loading, error, loadPnlAnalysis, setFilters } = usePnlAnalysisStore();
   
   // Derived data from store
   const summary = data?.summary ?? null;
@@ -43,6 +43,54 @@ export default function PnLAnalysis() {
       loadPnlAnalysis();
     }
   }, [isAuthenticated, router, loadPnlAnalysis]);
+
+  // Handle timeframe change
+  const handleTimeframeChange = (tf: string) => {
+    setTimeframe(tf);
+    
+    const today = new Date();
+    let dateFrom = "";
+    
+    switch (tf) {
+      case "1M":
+        // Last 30 days
+        const oneMonthAgo = new Date(today);
+        oneMonthAgo.setDate(today.getDate() - 30);
+        dateFrom = oneMonthAgo.toISOString().split('T')[0];
+        break;
+      
+      case "3M":
+        // Last 90 days
+        const threeMonthsAgo = new Date(today);
+        threeMonthsAgo.setDate(today.getDate() - 90);
+        dateFrom = threeMonthsAgo.toISOString().split('T')[0];
+        break;
+      
+      case "6M":
+        // Last 180 days
+        const sixMonthsAgo = new Date(today);
+        sixMonthsAgo.setDate(today.getDate() - 180);
+        dateFrom = sixMonthsAgo.toISOString().split('T')[0];
+        break;
+      
+      case "YTD":
+        // Year to date (from Jan 1 of current year)
+        dateFrom = `${today.getFullYear()}-01-01`;
+        break;
+      
+      case "All":
+      default:
+        // No date filter
+        dateFrom = "";
+        break;
+    }
+    
+    // Update filters
+    setFilters({
+      date_from: dateFrom,
+      date_to: "", // Always show up to today
+    });
+  };
 
   if (!isAuthenticated) return null;
 
@@ -162,7 +210,8 @@ export default function PnLAnalysis() {
                 key={tf}
                 variant={timeframe === tf ? "default" : "outline"}
                 size="sm"
-                onClick={() => setTimeframe(tf)}
+                onClick={() => handleTimeframeChange(tf)}
+                disabled={loading}
                 className="text-xs sm:text-sm"
               >
                 {tf}
