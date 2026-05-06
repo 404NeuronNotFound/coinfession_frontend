@@ -60,6 +60,8 @@ export interface OpenPosition {
   quantity: number;
   unrealized_pnl: number | null;
   unrealized_roi: number | null;
+  realized_pnl: number | null;  // For closed positions
+  roi: number | null;  // For closed positions
   liquidation_price: number | null;
   distance_to_liquidation: number | null;
   funding_fees: number;
@@ -67,6 +69,7 @@ export interface OpenPosition {
   emotions: TradeEmotion[];
   notes: string;
   days_open: number;
+  is_open: boolean;  // Whether position is still open
 }
 
 export interface OpenPositionsResponse {

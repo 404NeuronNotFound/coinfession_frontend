@@ -249,13 +249,15 @@ export function LogLeverageDrawer() {
       };
 
       await saveTrade(payload);
-      closeDrawer();
       
-      // Reload open positions if this was an open position
-      if (isOpen) {
-        const { loadOpenPositions } = useTradeStore.getState();
-        await loadOpenPositions();
-      }
+      // Reload both open positions and trades to ensure UI updates properly
+      const { loadOpenPositions, loadTrades } = useTradeStore.getState();
+      await Promise.all([
+        loadOpenPositions(),
+        loadTrades()
+      ]);
+      
+      closeDrawer();
     } catch (error: any) {
       if (error?.response?.data) {
         // Backend validation errors
