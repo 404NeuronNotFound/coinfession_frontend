@@ -79,14 +79,8 @@ export default function MonthlyReport() {
     {
       label: "Total Trades",
       value: `${metrics.total_trades}`,
-      subtext: "closed positions",
+      subtext: `${metrics.spot_trades} spot • ${metrics.leverage_trades} leverage`,
       color: "default" as "default",
-    },
-    {
-      label: "Fees Paid",
-      value: `${fmt(metrics.total_fees)}`,
-      subtext: `${metrics.fees_pct_of_pnl.toFixed(1)}% of P&L`,
-      color: "warning" as "warning",
     },
     {
       label: "Avg Per Trade",
@@ -96,12 +90,39 @@ export default function MonthlyReport() {
       subtext: "realized P&L",
       color: (metrics.avg_pnl_per_trade >= 0 ? "success" : "warning") as "success" | "warning",
     },
+    {
+      label: "Largest Win",
+      value: `+${fmt(metrics.largest_win)}`,
+      subtext: "best trade",
+      color: "success" as "success",
+    },
+    {
+      label: "Largest Loss",
+      value: metrics.largest_loss < 0 ? `${fmt(metrics.largest_loss)}` : "$0",
+      subtext: metrics.largest_loss < 0 ? "worst trade" : "no losses",
+      color: (metrics.largest_loss < 0 ? "warning" : "default") as "warning" | "default",
+    },
+    {
+      label: "Profit Factor",
+      value: `${metrics.profit_factor.toFixed(2)}`,
+      subtext: metrics.profit_factor >= 1 ? "profitable" : "unprofitable",
+      color: (metrics.profit_factor >= 1 ? "success" : "warning") as "success" | "warning",
+    },
+    {
+      label: "Fees Paid",
+      value: `${fmt(metrics.total_fees)}`,
+      subtext: `${metrics.fees_pct_of_pnl.toFixed(1)}% of P&L`,
+      color: "warning" as "warning",
+    },
   ] : [
     { label: "Realized P&L", value: "—", subtext: "loading...", color: "default" as "default" },
     { label: "Win Rate", value: "—", subtext: "loading...", color: "default" as "default" },
     { label: "Total Trades", value: "—", subtext: "loading...", color: "default" as "default" },
-    { label: "Fees Paid", value: "—", subtext: "loading...", color: "default" as "default" },
     { label: "Avg Per Trade", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Largest Win", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Largest Loss", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Profit Factor", value: "—", subtext: "loading...", color: "default" as "default" },
+    { label: "Fees Paid", value: "—", subtext: "loading...", color: "default" as "default" },
   ];
 
   // Transform monthlyBars for MonthlyRealizedPnLChart
@@ -190,24 +211,34 @@ export default function MonthlyReport() {
           </div>
 
           {/* Month Selector */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">Month:</span>
             {loadingList ? (
-              <div className="text-sm text-muted-foreground">Loading months...</div>
+              <div className="text-sm text-muted-foreground">Loading...</div>
             ) : availableMonths.length === 0 ? (
               <div className="text-sm text-muted-foreground">No months available</div>
             ) : (
-              availableMonths.map((month) => (
-                <Button
-                  key={`${month.year}-${month.month}`}
-                  variant={month.year === selectedYear && month.month === selectedMonth ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => selectMonth(month.year, month.month)}
-                  className="text-xs sm:text-sm"
-                  disabled={loadingDetail}
-                >
-                  {month.month_label}
-                </Button>
-              ))
+              <select
+                value={selectedYear && selectedMonth ? `${selectedYear}-${selectedMonth}` : ""}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const [year, month] = e.target.value.split('-').map(Number);
+                    selectMonth(year, month);
+                  }
+                }}
+                disabled={loadingDetail}
+                className="px-3 py-2 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-w-[180px]"
+              >
+                <option value="" disabled>Select month</option>
+                {availableMonths.map((month) => (
+                  <option 
+                    key={`${month.year}-${month.month}`} 
+                    value={`${month.year}-${month.month}`}
+                  >
+                    {month.month_label}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
         </div>

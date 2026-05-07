@@ -24,7 +24,7 @@ export default function MonthlyStats({ stats }: MonthlyStatsProps) {
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
       {stats.map((stat, i) => (
         <div key={i} className="p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-1">

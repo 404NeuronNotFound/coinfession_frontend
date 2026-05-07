@@ -47,10 +47,25 @@ export const useMonthlyReportStore = create<MonthlyReportState>((set, get) => ({
       
       set({ availableMonths: response.available_months });
       
-      // Auto-select the first month (newest) if available
+      // Auto-select current month if available, otherwise select the first month (newest)
       if (response.available_months.length > 0) {
-        const firstMonth = response.available_months[0];
-        await get().loadReportDetail(firstMonth.year, firstMonth.month);
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
+        
+        // Try to find current month
+        const currentMonthData = response.available_months.find(
+          month => month.year === currentYear && month.month === currentMonth
+        );
+        
+        if (currentMonthData) {
+          // Current month exists, select it
+          await get().loadReportDetail(currentYear, currentMonth);
+        } else {
+          // Current month doesn't exist, select the first available month (newest)
+          const firstMonth = response.available_months[0];
+          await get().loadReportDetail(firstMonth.year, firstMonth.month);
+        }
       }
       
     } catch (error) {

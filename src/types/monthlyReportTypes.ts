@@ -21,12 +21,18 @@ export interface MonthlyReportMetrics {
   realized_pnl: number;
   win_rate: number;
   total_trades: number;
+  spot_trades: number;
+  leverage_trades: number;
   closed_trades: number;
   winning_trades: number;
   losing_trades: number;
   total_fees: number;
   fees_pct_of_pnl: number;
   avg_pnl_per_trade: number;
+  avg_hold_time_days: number;
+  largest_win: number;
+  largest_loss: number;
+  profit_factor: number;
 }
 
 export interface TradeEmotion {
