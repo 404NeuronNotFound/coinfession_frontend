@@ -4,27 +4,19 @@ import { EmotionStat } from "@/types/emotionJournalTypes";
 
 interface EmotionStatsProps {
   stats: EmotionStat[];
-  activeEmotionId?: number | null;
-  onEmotionClick?: (emotionId: number) => void;
 }
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
-export default function EmotionStats({ stats, activeEmotionId, onEmotionClick }: EmotionStatsProps) {
+export default function EmotionStats({ stats }: EmotionStatsProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
       {stats.map((stat) => {
-        const isActive = activeEmotionId === stat.id;
         return (
           <div
             key={stat.id}
-            onClick={() => onEmotionClick?.(stat.id)}
-            className={`p-3 sm:p-4 rounded-lg border transition-all cursor-pointer ${
-              isActive
-                ? "border-foreground bg-foreground/5"
-                : "border-border bg-card hover:border-foreground/30"
-            }`}
+            className="p-3 sm:p-4 rounded-lg border border-border bg-card"
           >
             <div className="flex items-center gap-2 mb-2">
               <div

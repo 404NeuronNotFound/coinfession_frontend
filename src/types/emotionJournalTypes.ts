@@ -41,9 +41,12 @@ export interface EmotionJournalResponse {
   trades: EmotionTrade[];
   insights: PatternInsight[];
   heatmap: HeatmapDay[];
+  available_years: number[];
+  selected_year: number;
 }
 
 export interface EmotionJournalFilters {
   emotion_id?: number | null;
   weeks?: number;
+  year?: number;
 }

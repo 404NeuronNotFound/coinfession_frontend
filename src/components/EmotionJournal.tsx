@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardHeader from "@/components/ui/DashboardHeader";
 import EmotionStats from "@/components/ui/EmotionStats";
 import WinRateByEmotion from "@/components/ui/WinRateByEmotion";
 import AvgPnLByEmotion from "@/components/ui/AvgPnLByEmotion";
@@ -22,14 +21,17 @@ export default function EmotionJournal() {
   
   const {
     emotionStats,
-    trades,
+    filteredTrades,
     insights,
     heatmap,
+    availableYears,
+    selectedYear,
     activeEmotionId,
     loading,
     error,
     loadJournal,
     setActiveEmotion,
+    setSelectedYear,
     clearError,
   } = useEmotionJournalStore();
 
@@ -53,6 +55,12 @@ export default function EmotionJournal() {
 
   const handleShowAll = () => {
     setActiveEmotion(null);
+  };
+
+  const handleYearChange = (year: number) => {
+    if (accessToken) {
+      setSelectedYear(year, accessToken);
+    }
   };
 
   return (
@@ -96,11 +104,7 @@ export default function EmotionJournal() {
         {/* Emotion Stats */}
         {emotionStats.length > 0 && (
           <section className="mb-6 sm:mb-8">
-            <EmotionStats
-              stats={emotionStats}
-              activeEmotionId={activeEmotionId}
-              onEmotionClick={handleEmotionClick}
-            />
+            <EmotionStats stats={emotionStats} />
           </section>
         )}
 
@@ -122,43 +126,47 @@ export default function EmotionJournal() {
           </section>
         )}
 
-        {/* Emotion Filter */}
+        {/* Trades List with Emotion Filter */}
         {emotionStats.length > 0 && (
           <section className="mb-6 sm:mb-8">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={activeEmotionId === null ? "default" : "outline"}
-                size="sm"
-                onClick={handleShowAll}
-                className="text-xs sm:text-sm"
-              >
-                All
-              </Button>
-              {emotionStats.map((emotion) => (
+            {/* Emotion Filter for Trades Only */}
+            <div className="mb-4">
+              <div className="flex flex-wrap gap-2">
                 <Button
-                  key={emotion.id}
-                  variant={activeEmotionId === emotion.id ? "default" : "outline"}
+                  variant={activeEmotionId === null ? "default" : "outline"}
                   size="sm"
-                  onClick={() => handleEmotionClick(emotion.id)}
+                  onClick={handleShowAll}
                   className="text-xs sm:text-sm"
                 >
-                  {emotion.name}
+                  All
                 </Button>
-              ))}
+                {emotionStats.map((emotion) => (
+                  <Button
+                    key={emotion.id}
+                    variant={activeEmotionId === emotion.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleEmotionClick(emotion.id)}
+                    className="text-xs sm:text-sm"
+                  >
+                    {emotion.name}
+                  </Button>
+                ))}
+              </div>
             </div>
-          </section>
-        )}
 
-        {/* Trades List */}
-        {trades.length > 0 && (
-          <section className="mb-6 sm:mb-8">
-            <EmotionTradesList trades={trades} />
+            {/* Trades List */}
+            {filteredTrades.length > 0 && <EmotionTradesList trades={filteredTrades} />}
           </section>
         )}
 
         {/* Trading Activity Heatmap */}
         <section>
-          <TradingActivityHeatmap data={heatmap} />
+          <TradingActivityHeatmap 
+            data={heatmap} 
+            availableYears={availableYears}
+            selectedYear={selectedYear}
+            onYearChange={handleYearChange}
+          />
         </section>
       </div>
     </main>

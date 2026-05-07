@@ -3,7 +3,7 @@ import { EmotionJournalResponse, EmotionJournalFilters } from "@/types/emotionJo
 
 /**
  * Fetch emotion journal data from the backend.
- * GET /api/emotion-journal/?emotion_id=<id>&weeks=52
+ * GET /api/emotion-journal/?emotion_id=<id>&weeks=52&year=2026
  */
 export async function fetchEmotionJournal(
   token: string,
@@ -13,6 +13,10 @@ export async function fetchEmotionJournal(
   
   if (filters?.emotion_id) {
     params.append("emotion_id", String(filters.emotion_id));
+  }
+  
+  if (filters?.year) {
+    params.append("year", String(filters.year));
   }
   
   // Always request 52 weeks for full-year heatmap

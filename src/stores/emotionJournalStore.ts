@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { fetchEmotionJournal } from "@/api/emotionJournalApi";
 import {
-  EmotionJournalResponse,
   EmotionStat,
   EmotionTrade,
   PatternInsight,
@@ -11,9 +10,12 @@ import {
 interface EmotionJournalState {
   // Data
   emotionStats: EmotionStat[];
-  trades: EmotionTrade[];
+  allTrades: EmotionTrade[]; // Store all trades
+  filteredTrades: EmotionTrade[]; // Store filtered trades for display
   insights: PatternInsight[];
   heatmap: HeatmapDay[];
+  availableYears: number[];
+  selectedYear: number;
 
   // UI State
   activeEmotionId: number | null;
@@ -21,36 +23,43 @@ interface EmotionJournalState {
   error: string | null;
 
   // Actions
-  loadJournal: (token: string, emotionId?: number | null) => Promise<void>;
+  loadJournal: (token: string, year?: number) => Promise<void>;
   setActiveEmotion: (emotionId: number | null) => void;
+  setSelectedYear: (year: number, token?: string) => void;
   clearError: () => void;
 }
 
 export const useEmotionJournalStore = create<EmotionJournalState>((set, get) => ({
   // Initial state
   emotionStats: [],
-  trades: [],
+  allTrades: [],
+  filteredTrades: [],
   insights: [],
   heatmap: [],
+  availableYears: [],
+  selectedYear: new Date().getFullYear(),
   activeEmotionId: null,
   loading: false,
   error: null,
 
-  // Load journal data from API
-  loadJournal: async (token: string, emotionId?: number | null) => {
+  // Load journal data from API (always loads all data, no emotion filter)
+  loadJournal: async (token: string, year?: number) => {
     set({ loading: true, error: null });
     try {
+      const currentYear = year ?? get().selectedYear;
       const data = await fetchEmotionJournal(token, {
-        emotion_id: emotionId ?? undefined,
         weeks: 52,
+        year: currentYear,
       });
 
       set({
         emotionStats: data.emotion_stats,
-        trades: data.trades,
+        allTrades: data.trades,
+        filteredTrades: data.trades, // Initially show all trades
         insights: data.insights,
         heatmap: data.heatmap,
-        activeEmotionId: emotionId ?? null,
+        availableYears: data.available_years || [],
+        selectedYear: data.selected_year || currentYear,
         loading: false,
       });
     } catch (err) {
@@ -59,11 +68,28 @@ export const useEmotionJournalStore = create<EmotionJournalState>((set, get) => 
     }
   },
 
-  // Set active emotion and reload data
-  setActiveEmotion: async (emotionId: number | null) => {
+  // Set active emotion and filter trades locally
+  setActiveEmotion: (emotionId: number | null) => {
+    const { allTrades } = get();
+    const filteredTrades = emotionId 
+      ? allTrades.filter(trade => trade.emotion_id === emotionId)
+      : allTrades;
+    
+    set({ 
+      activeEmotionId: emotionId,
+      filteredTrades 
+    });
+  },
+
+  // Set selected year and reload data
+  setSelectedYear: async (year: number, token?: string) => {
     const { loadJournal } = get();
-    const token = localStorage.getItem("access_token") || "";
-    await loadJournal(token, emotionId);
+    if (!token) {
+      console.error("No token provided to setSelectedYear");
+      return;
+    }
+    set({ selectedYear: year });
+    await loadJournal(token, year);
   },
 
   // Clear error message
