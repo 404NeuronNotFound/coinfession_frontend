@@ -217,7 +217,12 @@ export default function PnLAnalysis() {
                 {tf}
               </Button>
             ))}
-            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs sm:text-sm"
+              onClick={() => router.push("/aifeedback")}
+            >
               AI Insight →
             </Button>
           </div>

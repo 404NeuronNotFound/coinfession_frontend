@@ -94,7 +94,7 @@ export default function BestWorstTradeMonth({ data }: BestWorstTradeMonthProps) 
               </div>
             </>
           ) : (
-            <div className="text-sm text-red-900 opacity-50">No closed trades yet</div>
+            <div className="text-sm text-red-900 opacity-50">No losing trades this month</div>
           )}
         </div>
       </div>
