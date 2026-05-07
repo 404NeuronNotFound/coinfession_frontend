@@ -6,6 +6,7 @@ import { useTradeStore } from "@/stores/tradeStore";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Badge } from "./badge";
+import { Toast } from "./Toast";
 import { X, Search } from "lucide-react";
 import { searchCoins, createCoin } from "@/api/tradeApi";
 import type { CoinSearchResult } from "@/types/tradeTypes";
@@ -35,6 +36,11 @@ export function LogTradeDrawer() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  // Toast state
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
+  const [showToast, setShowToast] = useState(false);
 
   // Pre-fill form when editing
   useEffect(() => {
@@ -214,7 +220,16 @@ export function LogTradeDrawer() {
       };
 
       await saveTrade(payload);
-      closeDrawer();
+      
+      // Show success toast
+      setToastMessage(editingTrade ? "Trade updated successfully!" : "Trade logged successfully!");
+      setToastType("success");
+      setShowToast(true);
+      
+      // Close drawer after a short delay to allow toast to be visible
+      setTimeout(() => {
+        closeDrawer();
+      }, 500);
     } catch (error: any) {
       console.error("Failed to save trade:", error);
       
@@ -235,6 +250,16 @@ export function LogTradeDrawer() {
 
   return (
     <>
+      {/* Toast Notification */}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          duration={3000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 z-40"
@@ -255,7 +280,7 @@ export function LogTradeDrawer() {
             </h2>
             <button
               onClick={closeDrawer}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -282,7 +307,7 @@ export function LogTradeDrawer() {
                     value={coinQuery}
                     onChange={(e) => handleCoinSearch(e.target.value)}
                     onFocus={() => coinResults.length > 0 && setShowCoinDropdown(true)}
-                    className={errors.coin ? "border-destructive" : ""}
+                    className={`cursor-pointer ${errors.coin ? "border-destructive" : ""}`}
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 </div>
@@ -306,7 +331,7 @@ export function LogTradeDrawer() {
                           key={idx}
                           type="button"
                           onClick={() => handleCoinSelect(coin)}
-                          className={`w-full text-left p-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 ${
+                          className={`w-full text-left p-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 cursor-pointer ${
                             isDark ? "border-border" : "border-slate-200"
                           }`}
                         >
@@ -340,7 +365,7 @@ export function LogTradeDrawer() {
                   type="button"
                   variant={tradeType === "buy" ? "default" : "outline"}
                   onClick={() => setTradeType("buy")}
-                  className="flex-1"
+                  className="flex-1 cursor-pointer"
                 >
                   Buy
                 </Button>
@@ -348,7 +373,7 @@ export function LogTradeDrawer() {
                   type="button"
                   variant={tradeType === "sell" ? "default" : "outline"}
                   onClick={() => setTradeType("sell")}
-                  className="flex-1"
+                  className="flex-1 cursor-pointer"
                 >
                   Sell
                 </Button>
@@ -366,7 +391,7 @@ export function LogTradeDrawer() {
                 placeholder="0.00"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className={errors.quantity ? "border-destructive" : ""}
+                className={`cursor-pointer ${errors.quantity ? "border-destructive" : ""}`}
               />
               {errors.quantity && (
                 <p className="text-xs text-destructive mt-1">{errors.quantity}</p>
@@ -382,7 +407,7 @@ export function LogTradeDrawer() {
                 type="date"
                 value={tradeDate}
                 onChange={(e) => setTradeDate(e.target.value)}
-                className={`[color-scheme:light] ${errors.trade_date ? "border-destructive" : ""}`}
+                className={`[color-scheme:light] cursor-pointer ${errors.trade_date ? "border-destructive" : ""}`}
               />
               {errors.trade_date && (
                 <p className="text-xs text-destructive mt-1">{errors.trade_date}</p>
@@ -401,7 +426,7 @@ export function LogTradeDrawer() {
                   placeholder="0.00"
                   value={buyPrice}
                   onChange={(e) => setBuyPrice(e.target.value)}
-                  className={errors.buy_price ? "border-destructive" : ""}
+                  className={`cursor-pointer ${errors.buy_price ? "border-destructive" : ""}`}
                 />
                 {errors.buy_price && (
                   <p className="text-xs text-destructive mt-1">{errors.buy_price}</p>
@@ -422,7 +447,7 @@ export function LogTradeDrawer() {
                     placeholder="0.00"
                     value={buyPrice}
                     onChange={(e) => setBuyPrice(e.target.value)}
-                    className={errors.buy_price ? "border-destructive" : ""}
+                    className={`cursor-pointer ${errors.buy_price ? "border-destructive" : ""}`}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     The price you originally bought at
@@ -442,7 +467,7 @@ export function LogTradeDrawer() {
                     placeholder="0.00"
                     value={sellPrice}
                     onChange={(e) => setSellPrice(e.target.value)}
-                    className={errors.sell_price ? "border-destructive" : ""}
+                    className={`cursor-pointer ${errors.sell_price ? "border-destructive" : ""}`}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     The price you're selling at
@@ -465,6 +490,7 @@ export function LogTradeDrawer() {
                 placeholder="0.00"
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
+                className="cursor-pointer"
               />
             </div>
 
@@ -521,7 +547,7 @@ export function LogTradeDrawer() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className={`w-full px-3 py-2 rounded-md border text-sm resize-none ${
+                className={`w-full px-3 py-2 rounded-md border text-sm resize-none cursor-text ${
                   isDark 
                     ? "bg-background border-border text-foreground placeholder:text-muted-foreground" 
                     : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
@@ -536,14 +562,14 @@ export function LogTradeDrawer() {
                 variant="outline"
                 onClick={closeDrawer}
                 disabled={isSaving}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               >
                 {isSaving ? "Saving..." : editingTrade ? "Update Trade" : "Log Trade"}
               </Button>

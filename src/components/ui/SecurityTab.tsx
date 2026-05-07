@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/useToast";
 import { Toast } from "@/components/ui/Toast";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { Button } from "./button";
-import { Monitor, Smartphone, Eye, EyeOff } from "lucide-react";
+import { Monitor, Smartphone, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
 import { UserSession, RefreshTokenInfo } from "@/types/auth";
 
 export default function SecurityTab() {
@@ -38,6 +38,9 @@ export default function SecurityTab() {
   const [isTokensLoading, setIsTokensLoading] = useState(true);
   const [revokeLoading, setRevokeLoading] = useState<number | null>(null);
   const [showRevokeAllConfirm, setShowRevokeAllConfirm] = useState(false);
+  const [sessionsPage, setSessionsPage] = useState(1);
+  const [tokensPage, setTokensPage] = useState(1);
+  const pageSize = 5;
 
   // Fetch sessions and tokens on mount
   useEffect(() => {
@@ -319,7 +322,7 @@ export default function SecurityTab() {
         ) : (
           <>
             <div className="space-y-4 mb-6">
-              {sessions.map((session) => (
+              {sessions.slice((sessionsPage - 1) * pageSize, sessionsPage * pageSize).map((session) => (
                 <div
                   key={session.id}
                   className={`rounded-lg p-4 sm:p-5 border ${
@@ -366,6 +369,51 @@ export default function SecurityTab() {
               ))}
             </div>
 
+            {/* Sessions Pagination */}
+            {sessions.length > pageSize && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div className="text-xs sm:text-sm text-muted-foreground">
+                  Showing {(sessionsPage - 1) * pageSize + 1}–{Math.min(sessionsPage * pageSize, sessions.length)} of {sessions.length} sessions
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSessionsPage(Math.max(1, sessionsPage - 1))}
+                    disabled={sessionsPage === 1}
+                    className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.ceil(sessions.length / pageSize) }, (_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={sessionsPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSessionsPage(pageNum)}
+                          className="w-8 h-8 p-0 text-xs cursor-pointer"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSessionsPage(Math.min(Math.ceil(sessions.length / pageSize), sessionsPage + 1))}
+                    disabled={sessionsPage === Math.ceil(sessions.length / pageSize)}
+                    className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {sessions.length > 1 && (
               <Button
                 variant="outline"
@@ -411,40 +459,87 @@ export default function SecurityTab() {
             <p className="text-muted-foreground">No active tokens</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {tokens.map((token) => (
-              <div
-                key={token.id}
-                className={`rounded-lg p-4 sm:p-5 border ${
-                  isDark ? "bg-muted/50 border-border" : "bg-slate-50 border-slate-200"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${token.revoked_at ? 'bg-red-500' : 'bg-green-500'}`} />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-foreground">
-                      Token {token.token_suffix}
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Issued {new Date(token.created_at).toLocaleDateString()} · expires {new Date(token.expires_at).toLocaleDateString()}
-                    </p>
-                    {token.last_used && (
+          <>
+            <div className="space-y-4 mb-6">
+              {tokens.slice((tokensPage - 1) * pageSize, tokensPage * pageSize).map((token) => (
+                <div
+                  key={token.id}
+                  className={`rounded-lg p-4 sm:p-5 border ${
+                    isDark ? "bg-muted/50 border-border" : "bg-slate-50 border-slate-200"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${token.revoked_at ? 'bg-red-500' : 'bg-green-500'}`} />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-foreground">
+                        Token {token.token_suffix}
+                      </h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Last used {new Date(token.last_used).toLocaleDateString()}
+                        Issued {new Date(token.created_at).toLocaleDateString()} · expires {new Date(token.expires_at).toLocaleDateString()}
                       </p>
-                    )}
-                    <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-2 ${
-                      token.revoked_at 
-                        ? 'bg-red-100 text-red-700' 
-                        : 'bg-green-100 text-green-700'
-                    }`}>
-                      {token.revoked_at ? 'Revoked' : 'Active'}
-                    </span>
+                      {token.last_used && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Last used {new Date(token.last_used).toLocaleDateString()}
+                        </p>
+                      )}
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-2 ${
+                        token.revoked_at 
+                          ? 'bg-red-100 text-red-700' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {token.revoked_at ? 'Revoked' : 'Active'}
+                      </span>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Tokens Pagination */}
+            {tokens.length > pageSize && (
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-xs sm:text-sm text-muted-foreground">
+                  Showing {(tokensPage - 1) * pageSize + 1}–{Math.min(tokensPage * pageSize, tokens.length)} of {tokens.length} tokens
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setTokensPage(Math.max(1, tokensPage - 1))}
+                    disabled={tokensPage === 1}
+                    className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.ceil(tokens.length / pageSize) }, (_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={tokensPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setTokensPage(pageNum)}
+                          className="w-8 h-8 p-0 text-xs cursor-pointer"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setTokensPage(Math.min(Math.ceil(tokens.length / pageSize), tokensPage + 1))}
+                    disabled={tokensPage === Math.ceil(tokens.length / pageSize)}
+                    className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

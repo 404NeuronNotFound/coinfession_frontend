@@ -27,7 +27,7 @@ const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "INR", "CNY
 
 export default function ProfileTab() {
   const { profile, isLoading, error, refetch } = useProtectedProfile();
-  const { updateProfile, isUpdating, error: updateError, setError } = useProfileStore();
+  const { updateProfile, isUpdating, setError } = useProfileStore();
   const { accessToken } = useAuthStore();
   const { toast, showToast, hideToast } = useToast();
   const [formData, setFormData] = useState<UserProfileUpdatePayload>({
@@ -126,14 +126,6 @@ export default function ProfileTab() {
               <p className="text-xs text-muted-foreground mt-1">
                 Member since {new Date(profile.member_since).toLocaleDateString()}
               </p>
-            </div>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 rounded-lg border border-border bg-background text-foreground font-semibold hover:bg-muted transition-colors">
-                Change Photo
-              </button>
-              <button className="px-4 py-2 rounded-lg border border-border bg-background text-foreground font-semibold hover:bg-muted transition-colors">
-                Change Profile
-              </button>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import { LogTradeDrawer } from "@/components/ui/LogTradeDrawer";
 import { useTradeStore } from "@/stores/tradeStore";
@@ -31,7 +31,6 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
     clearFilters,
     setPage,
     openDrawer,
-    deleteTrade,
   } = useTradeStore();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -114,7 +113,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
               placeholder="Search coin"
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="h-10 text-sm"
+              className="h-10 text-sm cursor-pointer"
             />
           </div>
         </div>
@@ -123,7 +122,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
           <select
             value={filters.type || ""}
             onChange={(e) => updateFilter("type", e.target.value)}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium cursor-pointer"
           >
             <option value="">All types</option>
             <option value="buy">Buy</option>
@@ -133,7 +132,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
           <select
             value={filters.emotion || ""}
             onChange={(e) => updateFilter("emotion", e.target.value)}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium cursor-pointer"
           >
             <option value="">All emotions</option>
             {emotionTags.map((tag) => (
@@ -146,7 +145,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
           <select
             value={filters.pnl || ""}
             onChange={(e) => updateFilter("pnl", e.target.value)}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium"
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm font-medium cursor-pointer"
           >
             <option value="">All P&L</option>
             <option value="profit">Profit</option>
@@ -159,19 +158,19 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
             type="date" 
             value={filters.date_from || ""}
             onChange={(e) => updateFilter("date_from", e.target.value)}
-            className="h-10 w-40 text-sm [color-scheme:light]" 
+            className="h-10 w-40 text-sm [color-scheme:light] cursor-pointer" 
           />
           <span className="text-sm font-medium text-muted-foreground">to</span>
           <Input 
             type="date" 
             value={filters.date_to || ""}
             onChange={(e) => updateFilter("date_to", e.target.value)}
-            className="h-10 w-40 text-sm [color-scheme:light]" 
+            className="h-10 w-40 text-sm [color-scheme:light] cursor-pointer" 
           />
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs sm:text-sm"
+            className="text-xs sm:text-sm cursor-pointer"
             onClick={clearFilters}
           >
             Clear
@@ -324,7 +323,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
             size="icon"
             onClick={() => setPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1 || loading}
-            className="h-8 w-8 sm:h-10 sm:w-10"
+            className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -338,7 +337,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
                   size="sm"
                   onClick={() => setPage(pageNum)}
                   disabled={loading}
-                  className="w-8 h-8 p-0 text-xs"
+                  className="w-8 h-8 p-0 text-xs cursor-pointer"
                 >
                   {pageNum}
                 </Button>
@@ -350,7 +349,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
             size="icon"
             onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages || loading}
-            className="h-8 w-8 sm:h-10 sm:w-10"
+            className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>

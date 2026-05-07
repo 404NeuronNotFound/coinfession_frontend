@@ -73,7 +73,7 @@ export default function DashboardPage() {
 
   // ── Handle log trade button
   const handleLogTrade = () => {
-    router.push("/tradelog");
+    router.push("/spottrades");
   };
 
   // ── Build stat items
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                           </TableCell>
                           <TableCell 
                             className="text-right font-mono text-xs sm:text-sm hidden lg:table-cell"
-                            style={{ color: pos(h.unrealized_pnl) ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}
+                            style={{ color: pos(h.unrealized_pnl) ? "#16a34a" : "#dc2626" }}
                           >
                             {pnlSign}{fmt(pnlAbs)} <span className="text-xs opacity-70">({pctSign}{h.unrealized_pnl_pct.toFixed(1)}%)</span>
                           </TableCell>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
           <div className="h-full">
             <RecentTrades
               trades={recentTradesData}
-              onViewAll={() => router.push("/tradelog")}
+              onViewAll={() => router.push("/spottrades")}
             />
           </div>
         </div>

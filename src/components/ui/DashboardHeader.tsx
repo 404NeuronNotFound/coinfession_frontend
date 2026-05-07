@@ -33,17 +33,17 @@ export default function DashboardHeader({
 
       <div className="flex items-center gap-2 flex-wrap">
         {onExport && (
-          <Button variant="outline" onClick={onExport} size="sm" className="text-xs sm:text-sm">
+          <Button variant="outline" onClick={onExport} size="sm" className="text-xs sm:text-sm cursor-pointer">
             Export
           </Button>
         )}
         {onLogTrade && (
-          <Button onClick={onLogTrade} size="sm" className="text-xs sm:text-sm">
+          <Button onClick={onLogTrade} size="sm" className="text-xs sm:text-sm cursor-pointer">
             {logTradeButtonText}
           </Button>
         )}
         {onMenu && (
-          <Button variant="ghost" size="icon" onClick={onMenu} className="h-8 w-8 sm:h-10 sm:w-10">
+          <Button variant="ghost" size="icon" onClick={onMenu} className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer">
             ⋯
           </Button>
         )}

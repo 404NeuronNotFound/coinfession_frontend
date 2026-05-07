@@ -316,7 +316,7 @@ export function LogLeverageDrawer() {
             </h2>
             <button
               onClick={closeDrawer}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -343,7 +343,7 @@ export function LogLeverageDrawer() {
                     value={coinQuery}
                     onChange={(e) => handleCoinSearch(e.target.value)}
                     onFocus={() => coinResults.length > 0 && setShowCoinDropdown(true)}
-                    className={errors.coin ? "border-destructive" : ""}
+                    className={`cursor-pointer ${errors.coin ? "border-destructive" : ""}`}
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 </div>
@@ -366,7 +366,7 @@ export function LogLeverageDrawer() {
                           key={idx}
                           type="button"
                           onClick={() => handleCoinSelect(coin)}
-                          className={`w-full text-left p-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 ${
+                          className={`w-full text-left p-3 hover:bg-muted/50 transition-colors border-b last:border-b-0 cursor-pointer ${
                             isDark ? "border-border" : "border-slate-200"
                           }`}
                         >
@@ -400,7 +400,7 @@ export function LogLeverageDrawer() {
                   type="button"
                   variant={positionType === "long" ? "default" : "outline"}
                   onClick={() => setPositionType("long")}
-                  className="flex-1"
+                  className="flex-1 cursor-pointer"
                 >
                   Long
                 </Button>
@@ -408,7 +408,7 @@ export function LogLeverageDrawer() {
                   type="button"
                   variant={positionType === "short" ? "default" : "outline"}
                   onClick={() => setPositionType("short")}
-                  className="flex-1"
+                  className="flex-1 cursor-pointer"
                 >
                   Short
                 </Button>
@@ -426,7 +426,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={entryPrice}
                 onChange={(e) => setEntryPrice(e.target.value)}
-                className={errors.entry_price ? "border-destructive" : ""}
+                className={`cursor-pointer ${errors.entry_price ? "border-destructive" : ""}`}
               />
               {errors.entry_price && (
                 <p className="text-xs text-destructive mt-1">{errors.entry_price}</p>
@@ -446,7 +446,7 @@ export function LogLeverageDrawer() {
                     setCloseDate("");
                   }
                 }}
-                className="w-4 h-4 rounded border-border"
+                className="w-4 h-4 rounded border-border cursor-pointer"
               />
               <label htmlFor="is-open" className="text-sm font-medium text-foreground cursor-pointer">
                 Position still open
@@ -465,7 +465,7 @@ export function LogLeverageDrawer() {
                   placeholder="0.00"
                   value={exitPrice}
                   onChange={(e) => setExitPrice(e.target.value)}
-                  className={errors.exit_price ? "border-destructive" : ""}
+                  className={`cursor-pointer ${errors.exit_price ? "border-destructive" : ""}`}
                 />
                 {errors.exit_price && (
                   <p className="text-xs text-destructive mt-1">{errors.exit_price}</p>
@@ -484,7 +484,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={collateral}
                 onChange={(e) => setCollateral(e.target.value)}
-                className={errors.collateral ? "border-destructive" : ""}
+                className={`cursor-pointer ${errors.collateral ? "border-destructive" : ""}`}
               />
               {errors.collateral && (
                 <p className="text-xs text-destructive mt-1">{errors.collateral}</p>
@@ -504,6 +504,7 @@ export function LogLeverageDrawer() {
                     variant={leverage === lev ? "default" : "outline"}
                     onClick={() => setLeverage(lev)}
                     size="sm"
+                    className="cursor-pointer"
                   >
                     {lev}x
                   </Button>
@@ -517,7 +518,7 @@ export function LogLeverageDrawer() {
                 placeholder="Custom leverage (1-125)"
                 value={leverage}
                 onChange={(e) => setLeverage(parseFloat(e.target.value) || 1)}
-                className={errors.leverage ? "border-destructive" : ""}
+                className={`cursor-pointer ${errors.leverage ? "border-destructive" : ""}`}
               />
               {errors.leverage && (
                 <p className="text-xs text-destructive mt-1">{errors.leverage}</p>
@@ -575,6 +576,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={fundingFees}
                 onChange={(e) => setFundingFees(e.target.value)}
+                className="cursor-pointer"
               />
             </div>
 
@@ -589,6 +591,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
+                className="cursor-pointer"
               />
             </div>
 
@@ -601,7 +604,7 @@ export function LogLeverageDrawer() {
                 type="date"
                 value={tradeDate}
                 onChange={(e) => setTradeDate(e.target.value)}
-                className={`[color-scheme:light] ${errors.trade_date ? "border-destructive" : ""}`}
+                className={`[color-scheme:light] cursor-pointer ${errors.trade_date ? "border-destructive" : ""}`}
               />
               {errors.trade_date && (
                 <p className="text-xs text-destructive mt-1">{errors.trade_date}</p>
@@ -618,7 +621,7 @@ export function LogLeverageDrawer() {
                   type="date"
                   value={closeDate}
                   onChange={(e) => setCloseDate(e.target.value)}
-                  className="[color-scheme:light]"
+                  className="[color-scheme:light] cursor-pointer"
                 />
               </div>
             )}
@@ -681,7 +684,7 @@ export function LogLeverageDrawer() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className={`w-full px-3 py-2 rounded-md border text-sm resize-none ${
+                className={`w-full px-3 py-2 rounded-md border text-sm resize-none cursor-text ${
                   isDark 
                     ? "bg-background border-border text-foreground placeholder:text-muted-foreground" 
                     : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
@@ -696,14 +699,14 @@ export function LogLeverageDrawer() {
                 variant="outline"
                 onClick={closeDrawer}
                 disabled={isSaving}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               >
                 {isSaving ? "Saving..." : editingTrade ? "Update Position" : "Log Position"}
               </Button>

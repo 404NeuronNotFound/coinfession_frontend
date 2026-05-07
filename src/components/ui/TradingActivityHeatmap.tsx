@@ -5,9 +5,17 @@ import { HeatmapDay } from '@/types/emotionJournalTypes';
 
 interface TradingActivityHeatmapProps {
   data?: HeatmapDay[];
+  availableYears?: number[];
+  selectedYear?: number;
+  onYearChange?: (year: number) => void;
 }
 
-export default function TradingActivityHeatmap({ data = [] }: TradingActivityHeatmapProps) {
+export default function TradingActivityHeatmap({ 
+  data = [], 
+  availableYears = [],
+  selectedYear = new Date().getFullYear(),
+  onYearChange 
+}: TradingActivityHeatmapProps) {
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Build a map of dates to trade counts for quick lookup
@@ -16,21 +24,15 @@ export default function TradingActivityHeatmap({ data = [] }: TradingActivityHea
     data.forEach(day => {
       map.set(day.date, day.trade_count);
     });
-    
-    // Debug: log dates with trades
-    console.log('Heatmap data from backend:', Array.from(map.entries()).filter(([_, count]) => count > 0));
-    
     return map;
   }, [data]);
 
-  // Generate 52-week grid for full year 2026 (Jan 1 - Dec 31)
-  // Dates from backend are already in user's local timezone
+  // Generate 52-week grid for the selected year
   const heatmapGrid = useMemo(() => {
     const grid: Array<Array<{ intensity: number; date: string; tradeCount: number }>> = [];
     
-    // We need to build a grid that shows the full year 2026
-    // Start from the first day we have data (Jan 1, 2026)
-    const yearStart = new Date(2026, 0, 1); // Jan 1, 2026
+    // Start from Jan 1 of selected year
+    const yearStart = new Date(selectedYear, 0, 1);
     
     // Find the Sunday before or on Jan 1
     const firstSunday = new Date(yearStart);
@@ -72,7 +74,7 @@ export default function TradingActivityHeatmap({ data = [] }: TradingActivityHea
       grid.push(week);
     }
     return grid;
-  }, [dateMap]);
+  }, [dateMap, selectedYear]);
 
   const getColor = (level: number) => {
     switch (level) {
@@ -97,7 +99,7 @@ export default function TradingActivityHeatmap({ data = [] }: TradingActivityHea
   // Month labels for the top
   const monthLabels = useMemo(() => {
     const labels: { week: number; month: string }[] = [];
-    const yearStart = new Date(2026, 0, 1);
+    const yearStart = new Date(selectedYear, 0, 1);
     
     // Find the Sunday before or on Jan 1
     const firstSunday = new Date(yearStart);
@@ -121,13 +123,34 @@ export default function TradingActivityHeatmap({ data = [] }: TradingActivityHea
       }
     }
     return labels;
-  }, []);
+  }, [selectedYear]);
 
   return (
     <div className="p-4 sm:p-6 rounded-lg border border-border bg-card">
-      <h3 className="text-xs uppercase tracking-widest font-semibold text-muted-foreground mb-6">
-        Trading Activity Heatmap · 2026
-      </h3>
+      {/* Header with Year Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h3 className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
+          Trading Activity Heatmap
+        </h3>
+        
+        {/* Year Dropdown Selector */}
+        {availableYears.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Year:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => onYearChange?.(parseInt(e.target.value))}
+              className="px-3 py-1.5 text-sm border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            >
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       <div className="overflow-x-auto">
         <div className="flex gap-2 min-w-max">

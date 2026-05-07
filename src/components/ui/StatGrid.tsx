@@ -15,8 +15,8 @@ interface StatGridProps {
 
 const colorClasses = {
   default: 'text-foreground',
-  success: 'text-primary',
-  warning: 'text-destructive',
+  success: 'text-green-600',
+  warning: 'text-red-600',
   neutral: 'text-foreground',
 };
 

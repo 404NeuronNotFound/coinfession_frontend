@@ -7,9 +7,7 @@ import { useThemeStore } from "@/stores/themeStore";
 import { SettingsTabs } from "@/components/ui/SettingsTabs";
 import ProfileTab from "@/components/ui/ProfileTab";
 import SecurityTab from "@/components/ui/SecurityTab";
-import CoinGeckoTab from "@/components/ui/CoinGeckoTab";
 import EmotionTagsTab from "@/components/ui/EmotionTagsTab";
-import PreferencesTab from "@/components/ui/PreferencesTab";
 import ExportImportTab from "@/components/ui/ExportImportTab";
 import DangerZoneTab from "@/components/ui/DangerZoneTab";
 
@@ -51,9 +49,7 @@ export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab
           <div className="lg:col-span-3">
             {activeTab === "profile" && <ProfileTab />}
             {activeTab === "security" && <SecurityTab />}
-            {activeTab === "coingecko" && <CoinGeckoTab />}
             {activeTab === "emotions" && <EmotionTagsTab />}
-            {activeTab === "preferences" && <PreferencesTab />}
             {activeTab === "export" && <ExportImportTab />}
             {activeTab === "danger" && <DangerZoneTab />}
           </div>

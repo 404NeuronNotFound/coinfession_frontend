@@ -188,7 +188,7 @@ export default function LeverageTrades() {
                   placeholder="Search coin"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full h-10 px-3 rounded-md border text-sm ${
+                  className={`w-full h-10 px-3 rounded-md border text-sm cursor-pointer ${
                     isDark
                       ? "bg-background border-border text-foreground"
                       : "bg-white border-slate-200 text-slate-900"
@@ -201,7 +201,7 @@ export default function LeverageTrades() {
               <select
                 value={positionTypeFilter}
                 onChange={(e) => setPositionTypeFilter(e.target.value)}
-                className={`h-10 px-3 rounded-md border text-sm font-medium ${
+                className={`h-10 px-3 rounded-md border text-sm font-medium cursor-pointer ${
                   isDark
                     ? "bg-background border-border text-foreground"
                     : "bg-white border-slate-200 text-slate-900"
@@ -215,7 +215,7 @@ export default function LeverageTrades() {
               <select
                 value={emotionFilter}
                 onChange={(e) => setEmotionFilter(e.target.value)}
-                className={`h-10 px-3 rounded-md border text-sm font-medium ${
+                className={`h-10 px-3 rounded-md border text-sm font-medium cursor-pointer ${
                   isDark
                     ? "bg-background border-border text-foreground"
                     : "bg-white border-slate-200 text-slate-900"
@@ -232,7 +232,7 @@ export default function LeverageTrades() {
               <select
                 value={pnlFilter}
                 onChange={(e) => setPnlFilter(e.target.value)}
-                className={`h-10 px-3 rounded-md border text-sm font-medium ${
+                className={`h-10 px-3 rounded-md border text-sm font-medium cursor-pointer ${
                   isDark
                     ? "bg-background border-border text-foreground"
                     : "bg-white border-slate-200 text-slate-900"
@@ -249,7 +249,7 @@ export default function LeverageTrades() {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className={`h-10 w-40 px-3 rounded-md border text-sm [color-scheme:light] ${
+                className={`h-10 w-40 px-3 rounded-md border text-sm [color-scheme:light] cursor-pointer ${
                   isDark
                     ? "bg-background border-border text-foreground"
                     : "bg-white border-slate-200 text-slate-900"
@@ -260,7 +260,7 @@ export default function LeverageTrades() {
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className={`h-10 w-40 px-3 rounded-md border text-sm [color-scheme:light] ${
+                className={`h-10 w-40 px-3 rounded-md border text-sm [color-scheme:light] cursor-pointer ${
                   isDark
                     ? "bg-background border-border text-foreground"
                     : "bg-white border-slate-200 text-slate-900"
@@ -269,7 +269,7 @@ export default function LeverageTrades() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs sm:text-sm"
+                className="text-xs sm:text-sm cursor-pointer"
                 onClick={clearFilters}
               >
                 Clear
@@ -607,7 +607,7 @@ export default function LeverageTrades() {
                                         e.stopPropagation();
                                         handleClosePosition(position);
                                       }}
-                                      className="text-xs"
+                                      className="text-xs cursor-pointer"
                                     >
                                       Close
                                     </Button>
@@ -634,7 +634,7 @@ export default function LeverageTrades() {
                         size="icon"
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="h-8 w-8 sm:h-10 sm:w-10"
+                        className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
@@ -647,7 +647,7 @@ export default function LeverageTrades() {
                               variant={currentPage === pageNum ? "default" : "outline"}
                               size="sm"
                               onClick={() => setCurrentPage(pageNum)}
-                              className="w-8 h-8 p-0 text-xs"
+                              className="w-8 h-8 p-0 text-xs cursor-pointer"
                             >
                               {pageNum}
                             </Button>
@@ -659,7 +659,7 @@ export default function LeverageTrades() {
                         size="icon"
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
-                        className="h-8 w-8 sm:h-10 sm:w-10"
+                        className="h-8 w-8 sm:h-10 sm:w-10 cursor-pointer"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </Button>
