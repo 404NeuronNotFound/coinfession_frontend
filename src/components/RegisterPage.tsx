@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useThemeStore } from "@/stores/themeStore";
 import { SunIcon, MoonIcon } from "@/components/ui/Icons";
+import { LegalModal } from "@/components/ui/LegalModal";
 
 // ─── Types, API, Store ────────────────────────────────────
 import { RegisterPayload, ApiError } from "@/types/auth";
@@ -58,6 +59,19 @@ export default function RegisterPage() {
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [legalModal, setLegalModal] = useState<{ isOpen: boolean; type: "terms" | "privacy" | null }>({
+    isOpen: false,
+    type: null,
+  });
+
+  const handleLegalClick = (e: React.MouseEvent, type: "terms" | "privacy") => {
+    e.preventDefault();
+    setLegalModal({ isOpen: true, type });
+  };
+
+  const closeLegalModal = () => {
+    setLegalModal({ isOpen: false, type: null });
+  };
 
   // ── Re-validate touched fields on every keystroke
   useEffect(() => {
@@ -387,9 +401,21 @@ export default function RegisterPage() {
               </div>
               <span className="text-xs leading-relaxed text-muted-foreground">
                 I agree to the{" "}
-                <a href="/terms" className="underline text-primary hover:text-primary/80">Terms of Service</a>
+                <button
+                  type="button"
+                  onClick={(e) => handleLegalClick(e, "terms")}
+                  className="underline text-primary hover:text-primary/80 cursor-pointer"
+                >
+                  Terms of Service
+                </button>
                 {" "}and{" "}
-                <a href="/privacy" className="underline text-primary hover:text-primary/80">Privacy Policy</a>
+                <button
+                  type="button"
+                  onClick={(e) => handleLegalClick(e, "privacy")}
+                  className="underline text-primary hover:text-primary/80 cursor-pointer"
+                >
+                  Privacy Policy
+                </button>
               </span>
             </label>
 
@@ -430,6 +456,15 @@ export default function RegisterPage() {
           </form>
         </div>
       </div>
+
+      {/* Legal Modal */}
+      {legalModal.type && (
+        <LegalModal
+          isOpen={legalModal.isOpen}
+          onClose={closeLegalModal}
+          type={legalModal.type}
+        />
+      )}
     </main>
   );
 }

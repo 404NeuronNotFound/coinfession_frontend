@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { InstagramIcon, TikTokIcon, GitHubIcon } from "@/components/ui/Icons";
+import { LegalModal } from "@/components/ui/LegalModal";
 
 const STACK = ["Next.js", "Django", "PostgreSQL", "Tailwind CSS", "CoinGecko API", "Claude API"];
 
@@ -9,7 +13,6 @@ const FOOTER_LINKS = [
       { label: "Features", href: "#features" },
       { label: "How it works", href: "#how-it-works" },
       { label: "AI Feedback", href: "#" },
-      { label: "Pricing", href: "#pricing" },
     ],
   },
   {
@@ -23,13 +26,25 @@ const FOOTER_LINKS = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Use", href: "#" },
+      { label: "Privacy Policy", action: "privacy" },
+      { label: "Terms of Use", action: "terms" },
     ],
   },
 ];
 
 export default function Footer() {
+  const [legalModal, setLegalModal] = useState<{ isOpen: boolean; type: "terms" | "privacy" | null }>({
+    isOpen: false,
+    type: null,
+  });
+
+  const handleLegalClick = (type: "terms" | "privacy") => {
+    setLegalModal({ isOpen: true, type });
+  };
+
+  const closeLegalModal = () => {
+    setLegalModal({ isOpen: false, type: null });
+  };
   return (
     <footer className="border-t border-border px-8 py-14 transition-colors duration-200">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between gap-12">
@@ -87,16 +102,26 @@ export default function Footer() {
               <div className="mb-4 uppercase text-[11px] tracking-widest text-muted-foreground">
                 {title}
               </div>
-              {links.map((l) => (
-                <a
-                  key={l.label}
-                  href={l.href}
-                  target={l.href.startsWith("http") ? "_blank" : undefined}
-                  rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="block mb-2 text-xs text-muted-foreground hover:text-foreground transition-colors no-underline"
-                >
-                  {l.label}
-                </a>
+              {links.map((l: any) => (
+                l.action ? (
+                  <button
+                    key={l.label}
+                    onClick={() => handleLegalClick(l.action)}
+                    className="block mb-2 text-xs text-muted-foreground hover:text-foreground transition-colors no-underline text-left cursor-pointer"
+                  >
+                    {l.label}
+                  </button>
+                ) : (
+                  <a
+                    key={l.label}
+                    href={l.href}
+                    target={l.href.startsWith("http") ? "_blank" : undefined}
+                    rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="block mb-2 text-xs text-muted-foreground hover:text-foreground transition-colors no-underline"
+                  >
+                    {l.label}
+                  </a>
+                )
               ))}
             </div>
           ))}
@@ -144,6 +169,15 @@ export default function Footer() {
           © {new Date().getFullYear()} CoinFession. Built for traders who want the truth.
         </div>
       </div>
+
+      {/* Legal Modal */}
+      {legalModal.type && (
+        <LegalModal
+          isOpen={legalModal.isOpen}
+          onClose={closeLegalModal}
+          type={legalModal.type}
+        />
+      )}
     </footer>
   );
 }
