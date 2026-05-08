@@ -343,7 +343,7 @@ export function LogLeverageDrawer() {
                     value={coinQuery}
                     onChange={(e) => handleCoinSearch(e.target.value)}
                     onFocus={() => coinResults.length > 0 && setShowCoinDropdown(true)}
-                    className={`cursor-pointer ${errors.coin ? "border-destructive" : ""}`}
+                    className={`${errors.coin ? "border-destructive" : ""}`}
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 </div>
@@ -426,7 +426,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={entryPrice}
                 onChange={(e) => setEntryPrice(e.target.value)}
-                className={`cursor-pointer ${errors.entry_price ? "border-destructive" : ""}`}
+                className={`${errors.entry_price ? "border-destructive" : ""}`}
               />
               {errors.entry_price && (
                 <p className="text-xs text-destructive mt-1">{errors.entry_price}</p>
@@ -465,7 +465,7 @@ export function LogLeverageDrawer() {
                   placeholder="0.00"
                   value={exitPrice}
                   onChange={(e) => setExitPrice(e.target.value)}
-                  className={`cursor-pointer ${errors.exit_price ? "border-destructive" : ""}`}
+                  className={`${errors.exit_price ? "border-destructive" : ""}`}
                 />
                 {errors.exit_price && (
                   <p className="text-xs text-destructive mt-1">{errors.exit_price}</p>
@@ -484,7 +484,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={collateral}
                 onChange={(e) => setCollateral(e.target.value)}
-                className={`cursor-pointer ${errors.collateral ? "border-destructive" : ""}`}
+                className={`${errors.collateral ? "border-destructive" : ""}`}
               />
               {errors.collateral && (
                 <p className="text-xs text-destructive mt-1">{errors.collateral}</p>
@@ -518,7 +518,7 @@ export function LogLeverageDrawer() {
                 placeholder="Custom leverage (1-125)"
                 value={leverage}
                 onChange={(e) => setLeverage(parseFloat(e.target.value) || 1)}
-                className={`cursor-pointer ${errors.leverage ? "border-destructive" : ""}`}
+                className={`${errors.leverage ? "border-destructive" : ""}`}
               />
               {errors.leverage && (
                 <p className="text-xs text-destructive mt-1">{errors.leverage}</p>
@@ -576,7 +576,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={fundingFees}
                 onChange={(e) => setFundingFees(e.target.value)}
-                className="cursor-pointer"
+                className=""
               />
             </div>
 
@@ -591,7 +591,7 @@ export function LogLeverageDrawer() {
                 placeholder="0.00"
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
-                className="cursor-pointer"
+                className=""
               />
             </div>
 

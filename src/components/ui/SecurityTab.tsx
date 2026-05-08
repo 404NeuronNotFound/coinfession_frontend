@@ -204,7 +204,7 @@ export default function SecurityTab() {
                   value={passwordForm.current}
                   onChange={handlePasswordChange}
                   placeholder="••••••••••"
-                  className={`w-full px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors pr-10 ${
+                  className={`w-full px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors pr-10 cursor-text ${
                     isDark
                       ? "bg-background border-border text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
                       : "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary focus:outline-none"
@@ -213,7 +213,7 @@ export default function SecurityTab() {
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility("current")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   {showPasswords.current ? (
                     <EyeOff className="w-4 h-4" />
@@ -239,7 +239,7 @@ export default function SecurityTab() {
                   value={passwordForm.new}
                   onChange={handlePasswordChange}
                   placeholder="Enter a password"
-                  className={`w-full px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors pr-10 ${
+                  className={`w-full px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors pr-10 cursor-text ${
                     isDark
                       ? "bg-background border-border text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
                       : "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary focus:outline-none"
@@ -248,7 +248,7 @@ export default function SecurityTab() {
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility("new")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   {showPasswords.new ? (
                     <EyeOff className="w-4 h-4" />
@@ -274,7 +274,7 @@ export default function SecurityTab() {
                   value={passwordForm.confirm}
                   onChange={handlePasswordChange}
                   placeholder="••••••••••"
-                  className={`w-full px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors pr-10 ${
+                  className={`w-full px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors pr-10 cursor-text ${
                     isDark
                       ? "bg-background border-border text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
                       : "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-primary focus:outline-none"
@@ -283,7 +283,7 @@ export default function SecurityTab() {
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility("confirm")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   {showPasswords.confirm ? (
                     <EyeOff className="w-4 h-4" />

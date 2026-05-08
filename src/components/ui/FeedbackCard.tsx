@@ -43,7 +43,7 @@ export default function FeedbackCard({
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full px-6 py-4 sm:py-5 flex items-start sm:items-center justify-between gap-4 hover:opacity-80 transition-opacity"
+        className="w-full px-6 py-4 sm:py-5 flex items-start sm:items-center justify-between gap-4 hover:opacity-80 transition-opacity cursor-pointer"
       >
         <div className="flex-1 text-left">
           <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">

@@ -61,7 +61,7 @@ export default function RecentTrades({ trades, onViewAll }: RecentTradesProps) {
       {onViewAll && (
         <button
           onClick={onViewAll}
-          className="mt-4 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          className="mt-4 text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
         >
           View all trades →
         </button>

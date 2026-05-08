@@ -44,66 +44,64 @@ export function ConfirmationModal({
   };
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className="absolute inset-0 bg-black/50 cursor-pointer"
         onClick={onCancel}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className={`rounded-lg shadow-lg max-w-sm w-full ${
-            isDark ? "bg-background border border-border" : "bg-white border border-slate-200"
-          }`}
-        >
-          {/* Header */}
-          <div className={`flex items-start justify-between p-6 border-b ${
-            isDark ? "border-border" : "border-slate-200"
-          }`}>
-            <div className="flex items-start gap-3">
-              {isDangerous && (
-                <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
-              )}
-              <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-            </div>
-            <button
-              onClick={onCancel}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <div
+        className={`relative rounded-lg shadow-lg max-w-sm w-full ${
+          isDark ? "bg-background border border-border" : "bg-white border border-slate-200"
+        }`}
+      >
+        {/* Header */}
+        <div className={`flex items-start justify-between p-6 border-b ${
+          isDark ? "border-border" : "border-slate-200"
+        }`}>
+          <div className="flex items-start gap-3">
+            {isDangerous && (
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+            )}
+            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           </div>
+          <button
+            onClick={onCancel}
+            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Body */}
-          <div className="p-6">
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
+        {/* Body */}
+        <div className="p-6">
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
 
-          {/* Footer */}
-          <div className={`flex gap-3 p-6 border-t ${
-            isDark ? "border-border" : "border-slate-200"
-          }`}>
-            <Button
-              variant="outline"
-              onClick={onCancel}
-              disabled={isProcessing || isLoading}
-              className="flex-1"
-            >
-              {cancelText}
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={isProcessing || isLoading}
-              variant={isDangerous ? "destructive" : "default"}
-              className="flex-1"
-            >
-              {isProcessing || isLoading ? "Processing..." : confirmText}
-            </Button>
-          </div>
+        {/* Footer */}
+        <div className={`flex gap-3 p-6 border-t ${
+          isDark ? "border-border" : "border-slate-200"
+        }`}>
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isProcessing || isLoading}
+            className="flex-1"
+          >
+            {cancelText}
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={isProcessing || isLoading}
+            variant={isDangerous ? "destructive" : "default"}
+            className="flex-1"
+          >
+            {isProcessing || isLoading ? "Processing..." : confirmText}
+          </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

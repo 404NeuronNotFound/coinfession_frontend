@@ -46,7 +46,7 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
     <div className={`fixed top-4 right-4 rounded-lg border ${bgColor} p-4 flex items-center gap-3 max-w-sm animate-in fade-in slide-in-from-top-2 duration-300 z-50`}>
       <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0`} />
       <p className={`text-sm font-medium ${textColor}`}>{message}</p>
-      <button onClick={onClose} className="ml-auto flex-shrink-0">
+      <button onClick={onClose} className="ml-auto flex-shrink-0 cursor-pointer">
         <X className={`w-4 h-4 ${textColor} hover:opacity-70 transition-opacity`} />
       </button>
     </div>

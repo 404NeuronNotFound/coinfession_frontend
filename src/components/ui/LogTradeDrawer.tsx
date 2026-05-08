@@ -307,7 +307,7 @@ export function LogTradeDrawer() {
                     value={coinQuery}
                     onChange={(e) => handleCoinSearch(e.target.value)}
                     onFocus={() => coinResults.length > 0 && setShowCoinDropdown(true)}
-                    className={`cursor-pointer ${errors.coin ? "border-destructive" : ""}`}
+                    className={`${errors.coin ? "border-destructive" : ""}`}
                   />
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 </div>
@@ -391,7 +391,7 @@ export function LogTradeDrawer() {
                 placeholder="0.00"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className={`cursor-pointer ${errors.quantity ? "border-destructive" : ""}`}
+                className={`${errors.quantity ? "border-destructive" : ""}`}
               />
               {errors.quantity && (
                 <p className="text-xs text-destructive mt-1">{errors.quantity}</p>
@@ -426,7 +426,7 @@ export function LogTradeDrawer() {
                   placeholder="0.00"
                   value={buyPrice}
                   onChange={(e) => setBuyPrice(e.target.value)}
-                  className={`cursor-pointer ${errors.buy_price ? "border-destructive" : ""}`}
+                  className={`${errors.buy_price ? "border-destructive" : ""}`}
                 />
                 {errors.buy_price && (
                   <p className="text-xs text-destructive mt-1">{errors.buy_price}</p>
@@ -447,7 +447,7 @@ export function LogTradeDrawer() {
                     placeholder="0.00"
                     value={buyPrice}
                     onChange={(e) => setBuyPrice(e.target.value)}
-                    className={`cursor-pointer ${errors.buy_price ? "border-destructive" : ""}`}
+                    className={`${errors.buy_price ? "border-destructive" : ""}`}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     The price you originally bought at
@@ -467,7 +467,7 @@ export function LogTradeDrawer() {
                     placeholder="0.00"
                     value={sellPrice}
                     onChange={(e) => setSellPrice(e.target.value)}
-                    className={`cursor-pointer ${errors.sell_price ? "border-destructive" : ""}`}
+                    className={`${errors.sell_price ? "border-destructive" : ""}`}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     The price you're selling at
@@ -490,7 +490,7 @@ export function LogTradeDrawer() {
                 placeholder="0.00"
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
-                className="cursor-pointer"
+                className=""
               />
             </div>
 

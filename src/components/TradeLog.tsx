@@ -113,7 +113,7 @@ export default function TradeLog({ onLogTrade, onExport }: TradeLogProps) {
               placeholder="Search coin"
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="h-10 text-sm cursor-pointer"
+              className="h-10 text-sm"
             />
           </div>
         </div>

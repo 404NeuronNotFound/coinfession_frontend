@@ -9,22 +9,6 @@ import { UserProfileUpdatePayload } from "@/types/profile";
 import { Toast } from "@/components/ui/Toast";
 import { AlertCircle, Loader2 } from "lucide-react";
 
-const TIMEZONES = [
-  "UTC",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Tokyo",
-  "Asia/Shanghai",
-  "Asia/Hong_Kong",
-  "Australia/Sydney",
-];
-
-const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "INR", "CNY"];
-
 export default function ProfileTab() {
   const { profile, isLoading, error, refetch } = useProtectedProfile();
   const { updateProfile, isUpdating, setError } = useProfileStore();
@@ -33,9 +17,6 @@ export default function ProfileTab() {
   const [formData, setFormData] = useState<UserProfileUpdatePayload>({
     display_name: "",
     bio: "",
-    profile_photo_url: "",
-    currency: "USD",
-    timezone: "UTC",
   });
 
   useEffect(() => {
@@ -43,9 +24,6 @@ export default function ProfileTab() {
       setFormData({
         display_name: profile.display_name || "",
         bio: profile.bio || "",
-        profile_photo_url: profile.profile_photo_url || "",
-        currency: profile.currency || "USD",
-        timezone: profile.timezone || "UTC",
       });
     }
   }, [profile]);
@@ -74,9 +52,6 @@ export default function ProfileTab() {
       setFormData({
         display_name: profile.display_name || "",
         bio: profile.bio || "",
-        profile_photo_url: profile.profile_photo_url || "",
-        currency: profile.currency || "USD",
-        timezone: profile.timezone || "UTC",
       });
     }
     setError(null);
@@ -99,7 +74,7 @@ export default function ProfileTab() {
             <p className="text-xs text-destructive/80 mt-1">{error}</p>
             <button
               onClick={refetch}
-              className="mt-3 px-3 py-1.5 text-xs font-medium bg-destructive text-white rounded hover:bg-destructive/90 transition-colors"
+              className="mt-3 px-3 py-1.5 text-xs font-medium bg-destructive text-white rounded hover:bg-destructive/90 transition-colors cursor-pointer"
             >
               Try Again
             </button>
@@ -142,7 +117,7 @@ export default function ProfileTab() {
             value={formData.display_name || ""}
             onChange={handleInputChange}
             placeholder="Your display name"
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-text"
           />
           <p className="text-xs text-muted-foreground mt-1">How your name appears to others</p>
         </div>
@@ -166,58 +141,9 @@ export default function ProfileTab() {
             onChange={handleInputChange}
             placeholder="Tell us about yourself..."
             rows={3}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none cursor-text"
           />
           <p className="text-xs text-muted-foreground mt-1">Max 500 characters</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-foreground mb-2">Currency</label>
-          <select
-            name="currency"
-            value={formData.currency || "USD"}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-          >
-            {CURRENCIES.map((curr) => (
-              <option key={curr} value={curr}>
-                {curr}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-muted-foreground mt-1">Default currency for P&L display</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-foreground mb-2">Timezone</label>
-          <select
-            name="timezone"
-            value={formData.timezone || "UTC"}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-          >
-            {TIMEZONES.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-muted-foreground mt-1">Used for trade timestamps</p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-foreground mb-2">
-            Profile Photo URL
-          </label>
-          <input
-            type="url"
-            name="profile_photo_url"
-            value={formData.profile_photo_url || ""}
-            onChange={handleInputChange}
-            placeholder="https://example.com/photo.jpg"
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-          />
-          <p className="text-xs text-muted-foreground mt-1">Direct link to your profile image</p>
         </div>
       </div>
 
@@ -225,7 +151,7 @@ export default function ProfileTab() {
         <button
           onClick={handleSave}
           disabled={isUpdating}
-          className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 cursor-pointer"
         >
           {isUpdating && <Loader2 className="w-4 h-4 animate-spin" />}
           Save Changes
@@ -233,7 +159,7 @@ export default function ProfileTab() {
         <button
           onClick={handleCancel}
           disabled={isUpdating}
-          className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground font-semibold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground font-semibold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           Cancel
         </button>

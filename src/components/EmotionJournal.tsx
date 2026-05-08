@@ -86,7 +86,7 @@ export default function EmotionJournal() {
               <div className="text-sm text-red-900">{error}</div>
               <button
                 onClick={clearError}
-                className="text-red-600 hover:text-red-700 font-semibold text-sm"
+                className="text-red-600 hover:text-red-700 font-semibold text-sm cursor-pointer"
               >
                 ✕
               </button>

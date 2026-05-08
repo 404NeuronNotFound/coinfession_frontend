@@ -188,7 +188,7 @@ export default function LeverageTrades() {
                   placeholder="Search coin"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full h-10 px-3 rounded-md border text-sm cursor-pointer ${
+                  className={`w-full h-10 px-3 rounded-md border text-sm cursor-text ${
                     isDark
                       ? "bg-background border-border text-foreground"
                       : "bg-white border-slate-200 text-slate-900"
