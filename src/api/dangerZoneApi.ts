@@ -75,6 +75,30 @@ export async function deleteAIFeedbackAll(
 }
 
 /**
+ * fetchAIFeedbackList
+ * GET /api/ai-feedback/
+ * Fetches all AI feedback for the current user.
+ */
+export async function fetchAIFeedbackList(token: string): Promise<any[]> {
+  return apiFetch<any[]>("/api/ai-feedback/", {
+    method: "GET",
+    token,
+  });
+}
+
+/**
+ * deleteAIFeedbackItem
+ * DELETE /api/ai-feedback/{id}/
+ * Deletes a specific AI feedback item.
+ */
+export async function deleteAIFeedbackItem(token: string, id: number): Promise<void> {
+  return apiFetch<void>(`/api/ai-feedback/${id}/`, {
+    method: "DELETE",
+    token,
+  });
+}
+
+/**
  * deleteAllTrades
  * DELETE /api/danger-zone/delete-trades/
  * Deletes all trades and snapshots (Tier 2 - permanent, requires confirmation).

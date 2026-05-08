@@ -8,7 +8,15 @@ import { useToast } from "@/hooks/useToast";
 import { Toast } from "./Toast";
 import { ConfirmationModal } from "./ConfirmationModal";
 import { Button } from "./button";
-import { AlertTriangle, RotateCcw, Trash2, Download, User } from "lucide-react";
+import { AlertTriangle, RotateCcw, Trash2, Download, User, Loader2 } from "lucide-react";
+import { fetchAIFeedbackList, deleteAIFeedbackItem } from "@/api/dangerZoneApi";
+
+interface AIFeedbackItem {
+  id: number;
+  month_label: string;
+  prompt_summary: string;
+  created_at: string;
+}
 
 interface DangerAction {
   id: string;
@@ -54,10 +62,16 @@ export default function DangerZoneTab() {
     deleteUserAccount,
   } = useDangerZoneStore();
 
+  // AI Feedback state
+  const [aiFeedbackList, setAiFeedbackList] = useState<AIFeedbackItem[]>([]);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [deletingFeedbackId, setDeletingFeedbackId] = useState<number | null>(null);
+
   // Load status on mount
   useEffect(() => {
     if (accessToken) {
       loadStatus(accessToken);
+      loadAIFeedback();
     }
   }, [accessToken, loadStatus]);
 
@@ -73,6 +87,20 @@ export default function DangerZoneTab() {
       showToast(error, "error", 3000);
     }
   }, [error, showToast]);
+
+  const loadAIFeedback = async () => {
+    if (!accessToken) return;
+    
+    setLoadingFeedback(true);
+    try {
+      const feedbackList = await fetchAIFeedbackList(accessToken);
+      setAiFeedbackList(feedbackList);
+    } catch (err) {
+      console.error("Failed to load AI feedback:", err);
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
 
   const handleExportData = () => {
     // TODO: Implement export functionality
@@ -103,6 +131,11 @@ export default function DangerZoneTab() {
       case "delete-account":
         await handleDeleteAccount();
         break;
+      default:
+        if (confirmModal.action?.startsWith("delete-feedback-item-")) {
+          await handleDeleteFeedbackItem();
+        }
+        break;
     }
   };
 
@@ -124,6 +157,7 @@ export default function DangerZoneTab() {
     if (accessToken) {
       await deleteAIFeedback(accessToken, "DELETE");
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+      await loadAIFeedback();
     }
   };
 
@@ -137,6 +171,23 @@ export default function DangerZoneTab() {
   const handleDeleteAccount = async () => {
     if (accessToken && user?.username) {
       await deleteUserAccount(accessToken, user.username);
+      setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
+    }
+  };
+
+  const handleDeleteFeedbackItem = async () => {
+    const feedbackId = parseInt(confirmModal.action?.split("-")[3] || "0");
+    if (!accessToken || !feedbackId) return;
+
+    setDeletingFeedbackId(feedbackId);
+    try {
+      await deleteAIFeedbackItem(accessToken, feedbackId);
+      setAiFeedbackList(aiFeedbackList.filter(f => f.id !== feedbackId));
+      showToast("AI feedback deleted successfully", "success", 3000);
+    } catch (err) {
+      showToast("Failed to delete AI feedback", "error", 3000);
+    } finally {
+      setDeletingFeedbackId(null);
       setConfirmModal({ isOpen: false, action: null, title: "", description: "" });
     }
   };
@@ -185,7 +236,7 @@ export default function DangerZoneTab() {
     {
       id: "delete-feedback",
       title: "Delete all AI feedback",
-      description: "Permanently deletes all 3 generated AI feedback reports. Your trades, emotions, and monthly report stats are not affected. You can regenerate feedback at any time.",
+      description: "Permanently deletes all generated AI feedback reports. Your trades, emotions, and monthly report stats are not affected. You can regenerate feedback at any time.",
       icon: <Trash2 className="w-6 h-6" />,
       count: status ? `${status.ai_feedback_count} reports` : "— reports",
       warning: `${status?.ai_feedback_count || "—"} AI feedback reports will be permanently deleted.`,
@@ -222,7 +273,7 @@ export default function DangerZoneTab() {
         title={confirmModal.title}
         description={confirmModal.description}
         isDangerous={confirmModal.action?.includes("delete") || confirmModal.action?.includes("account")}
-        isLoading={processing !== null}
+        isLoading={processing !== null || deletingFeedbackId !== null}
         onConfirm={handleConfirmAction}
         onCancel={closeConfirmModal}
         confirmText={confirmModal.action?.includes("delete") ? "Delete" : "Confirm"}
@@ -250,6 +301,60 @@ export default function DangerZoneTab() {
           </Button>
         </div>
       </div>
+
+      {/* AI Feedback Management */}
+      {aiFeedbackList.length > 0 && (
+        <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-background border-border" : "bg-white border-slate-200"}`}>
+          <div className="flex items-center justify-between mb-6 pb-6 border-b border-inherit">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Your AI Feedback</h3>
+            <span className={`text-xs font-medium px-3 py-1 rounded ${isDark ? "bg-blue-900/50 text-blue-200" : "bg-blue-100 text-blue-700"}`}>
+              {aiFeedbackList.length} {aiFeedbackList.length === 1 ? "report" : "reports"}
+            </span>
+          </div>
+
+          {loadingFeedback ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {aiFeedbackList.map((feedback) => (
+                <div
+                  key={feedback.id}
+                  className={`p-4 rounded-lg border flex items-start justify-between gap-4 ${
+                    isDark ? "bg-muted/50 border-border" : "bg-slate-50 border-slate-200"
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{feedback.month_label}</p>
+                    <p className="text-xs text-muted-foreground truncate">{feedback.prompt_summary}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(feedback.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openConfirmModal(
+                      `delete-feedback-item-${feedback.id}`,
+                      `Delete "${feedback.month_label}"`,
+                      `This AI feedback report will be permanently deleted. You can regenerate it at any time.`
+                    )}
+                    disabled={deletingFeedbackId !== null}
+                    className="text-destructive hover:text-destructive shrink-0"
+                  >
+                    {deletingFeedbackId === feedback.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Data Resets - Recoverable */}
       <div className={`rounded-lg border p-6 sm:p-8 ${isDark ? "bg-background border-border" : "bg-white border-slate-200"}`}>
