@@ -1,7 +1,7 @@
 "use client";
 
 import { useThemeStore } from "@/stores/themeStore";
-import { User, Lock, Sliders, Download, AlertTriangle } from "lucide-react";
+import { User, Lock, Sliders, AlertTriangle } from "lucide-react";
 
 interface SettingsTabsProps {
   activeTab: string;
@@ -26,12 +26,6 @@ const tabs = [
     label: "Emotion Tags",
     icon: Sliders,
     category: "JOURNAL",
-  },
-  {
-    id: "export",
-    label: "Export & Import",
-    icon: Download,
-    category: "DATA",
   },
   {
     id: "danger",
@@ -71,7 +65,7 @@ export function SettingsTabs({ activeTab, onTabChange }: SettingsTabsProps) {
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium text-left ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium text-left cursor-pointer ${
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : tab.isDanger

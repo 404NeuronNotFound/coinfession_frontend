@@ -8,7 +8,6 @@ import { SettingsTabs } from "@/components/ui/SettingsTabs";
 import ProfileTab from "@/components/ui/ProfileTab";
 import SecurityTab from "@/components/ui/SecurityTab";
 import EmotionTagsTab from "@/components/ui/EmotionTagsTab";
-import ExportImportTab from "@/components/ui/ExportImportTab";
 import DangerZoneTab from "@/components/ui/DangerZoneTab";
 
 export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab?: string }) {
@@ -50,7 +49,6 @@ export default function SettingsProfile({ defaultTab = "profile" }: { defaultTab
             {activeTab === "profile" && <ProfileTab />}
             {activeTab === "security" && <SecurityTab />}
             {activeTab === "emotions" && <EmotionTagsTab />}
-            {activeTab === "export" && <ExportImportTab />}
             {activeTab === "danger" && <DangerZoneTab />}
           </div>
         </div>
