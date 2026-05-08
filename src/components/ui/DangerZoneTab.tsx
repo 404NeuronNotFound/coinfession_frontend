@@ -273,7 +273,7 @@ export default function DangerZoneTab() {
         title={confirmModal.title}
         description={confirmModal.description}
         isDangerous={confirmModal.action?.includes("delete") || confirmModal.action?.includes("account")}
-        isLoading={processing !== null || deletingFeedbackId !== null}
+        isLoading={processing !== null}
         onConfirm={handleConfirmAction}
         onCancel={closeConfirmModal}
         confirmText={confirmModal.action?.includes("delete") ? "Delete" : "Confirm"}
