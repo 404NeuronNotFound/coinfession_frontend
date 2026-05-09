@@ -3,17 +3,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Eye, Loader2 } from "lucide-react";
+import { Sparkles, Eye, Loader2, Cpu } from "lucide-react";
 import FeedbackCard from "@/components/ui/FeedbackCard";
 import { useAuthStore } from "@/stores/authStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useAIFeedbackStore } from "@/stores/aiFeedbackStore";
+import { fetchMLStatus, generateAIFeedbackMLTest, type MLStatus } from "@/api/aiFeedbackApi";
+import { useToast } from "@/hooks/useToast";
+import { Toast } from "@/components/ui/Toast";
 
 export default function AiFeedback() {
   const router = useRouter();
   const theme = useThemeStore((state) => state.theme);
   const d = theme === "dark";
   const { isAuthenticated } = useAuthStore();
+  const { toast, showToast, hideToast } = useToast();
   
   const {
     feedbackList,
@@ -29,6 +33,11 @@ export default function AiFeedback() {
     toggleExpanded,
   } = useAIFeedbackStore();
 
+  // ML Test state
+  const [mlStatus, setMlStatus] = useState<MLStatus | null>(null);
+  const [generatingML, setGeneratingML] = useState(false);
+  const [mlError, setMlError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace("/login");
@@ -37,7 +46,34 @@ export default function AiFeedback() {
     
     loadFeedbackList();
     loadPreview();
+    loadMLStatus();
   }, [isAuthenticated, router, loadFeedbackList, loadPreview]);
+
+  const loadMLStatus = async () => {
+    try {
+      const status = await fetchMLStatus();
+      setMlStatus(status);
+    } catch (error) {
+      console.error("Failed to load ML status:", error);
+    }
+  };
+
+  const handleGenerateML = async () => {
+    setGeneratingML(true);
+    setMlError(null);
+    
+    try {
+      await generateAIFeedbackMLTest();
+      showToast("ML feedback generated successfully!", "success", 3000);
+      await loadFeedbackList();
+    } catch (error: any) {
+      const errorMsg = error?.message || "Failed to generate ML feedback";
+      setMlError(errorMsg);
+      showToast(errorMsg, "error", 3000);
+    } finally {
+      setGeneratingML(false);
+    }
+  };
 
   if (!isAuthenticated) return null;
 
@@ -52,6 +88,10 @@ export default function AiFeedback() {
 
   return (
     <main className={`min-h-screen transition-colors duration-200 ${d ? "bg-background" : "bg-white"}`}>
+      {toast.isVisible && (
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
+      )}
+      
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 pb-24 font-sans">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
@@ -111,6 +151,26 @@ export default function AiFeedback() {
                     </>
                   )}
                 </Button>
+                {mlStatus?.can_train_ml && (
+                  <Button 
+                    variant="outline"
+                    className="gap-2 whitespace-nowrap border-purple-500 text-purple-600 hover:bg-purple-50 dark:border-purple-400 dark:text-purple-400 dark:hover:bg-purple-950/20"
+                    onClick={handleGenerateML}
+                    disabled={generatingML}
+                  >
+                    {generatingML ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Training ML...
+                      </>
+                    ) : (
+                      <>
+                        <Cpu className="w-4 h-4" />
+                        ML Test
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -145,6 +205,18 @@ export default function AiFeedback() {
               </div>
             )}
 
+            {/* ML Status Info */}
+            {mlStatus && !mlStatus.can_train_ml && (
+              <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-purple-950/20 border-purple-700/30" : "bg-purple-50 border-purple-200"}`}>
+                <p className={`text-sm font-semibold ${d ? "text-purple-200" : "text-purple-800"} mb-1`}>
+                  ML Analysis Locked
+                </p>
+                <p className={`text-xs ${d ? "text-purple-300" : "text-purple-700"}`}>
+                  {mlStatus.message}
+                </p>
+              </div>
+            )}
+
             {/* Generating state */}
             {generating && (
               <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-blue-950/20 border-blue-700/30" : "bg-blue-50 border-blue-200"}`}>
@@ -154,11 +226,29 @@ export default function AiFeedback() {
               </div>
             )}
 
+            {/* ML Generating state */}
+            {generatingML && (
+              <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-purple-950/20 border-purple-700/30" : "bg-purple-50 border-purple-200"}`}>
+                <p className={`text-sm ${d ? "text-purple-200" : "text-purple-800"}`}>
+                  Training ML models on your {mlStatus?.closed_trades} closed trades... This may take a few seconds.
+                </p>
+              </div>
+            )}
+
             {/* Generate error */}
             {generateError && (
               <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-red-950/20 border-red-700/30" : "bg-red-50 border-red-200"}`}>
                 <p className={`text-sm ${d ? "text-red-200" : "text-red-800"}`}>
                   {generateError}
+                </p>
+              </div>
+            )}
+
+            {/* ML error */}
+            {mlError && (
+              <div className={`mt-4 rounded-lg p-4 border ${d ? "bg-red-950/20 border-red-700/30" : "bg-red-50 border-red-200"}`}>
+                <p className={`text-sm ${d ? "text-red-200" : "text-red-800"}`}>
+                  {mlError}
                 </p>
               </div>
             )}
