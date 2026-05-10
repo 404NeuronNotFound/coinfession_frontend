@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import Sidebar from '@/components/ui/Sidebar';
+import TradingChatWidget from '@/components/ui/TradingChatWidget';
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -50,6 +51,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
       <main className="flex-1 overflow-auto lg:ml-0">
         {children}
       </main>
+      <TradingChatWidget />
     </div>
   );
 }
