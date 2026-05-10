@@ -30,8 +30,9 @@ function Hero() {
       </h1>
       <p className="text-sm sm:text-base md:text-lg max-w-xl leading-relaxed mb-8 sm:mb-10 text-muted-foreground">
         CoinFession is a trade journal built for crypto investors. Log every buy and sell,
-        track your real P&L, spot your emotional patterns, and let AI give you brutally
-        honest feedback. Most traders lose because they never look back.{" "}
+        track your real P&L, spot your emotional patterns, and let Machine Learning analyze
+        your trading behavior. Chat with Fric, your AI trading coach powered by local LLM.
+        Most traders lose because they never look back.{" "}
         <span className="font-semibold text-foreground">This is your mirror.</span>
       </p>
       <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-10 sm:mb-14">
@@ -43,7 +44,7 @@ function Hero() {
         </Button>
       </div>
       <div className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 items-start sm:items-center text-xs text-muted-foreground">
-        {["Free to start", "No credit card required", "Powered by Claude AI", "CoinGecko live prices"].map(
+        {["Free to start", "No credit card required", "Machine Learning powered", "CoinGecko live prices"].map(
           (item, i, arr) => (
             <span key={item} className="flex items-center gap-4 sm:gap-6">
               {item}
@@ -86,10 +87,10 @@ function StatsStrip() {
 const FEATURES = [
   { Icon: ShieldIcon, title: "Trade Log", desc: "Log every buy and sell — coin, price, amount, date. Clean, fast, no friction." },
   { Icon: ChartIcon, title: "Real P&L Tracking", desc: "Auto-calculate realized and unrealized profit and loss per trade and per coin." },
-  { Icon: TrendingUpIcon, title: "Portfolio Overview", desc: "See all your current holdings in one view with live prices from CoinGecko." },
+  { Icon: TrendingUpIcon, title: "Portfolio Overview", desc: "See all your current holdings in one view with live prices from CoinGecko API." },
   { Icon: WinRateIcon, title: "Win Rate Tracker", desc: "Know your actual win percentage. Not vibes. Not guesses. Your real numbers." },
   { Icon: SmileFaceLargeIcon, title: "Emotion Log", desc: "Tag each trade — FOMO, Disciplined, Panic Sold, Greedy, Patient. Spot your patterns over time." },
-  { Icon: RobotHeadLargeIcon, title: "AI Feedback", desc: "Claude reads your journal and tells you exactly what your patterns say about you. No filter." },
+  { Icon: RobotHeadLargeIcon, title: "ML Analysis & Fric 🐸", desc: "Machine Learning analyzes your patterns. Chat with Fric, your AI trading coach with live CoinGecko prices." },
 ];
 
 function Features() {
@@ -134,8 +135,8 @@ const STEPS = [
   },
   {
     step: "03",
-    title: "Get AI feedback",
-    desc: "Claude analyzes your full journal and gives you brutally honest feedback — no sugarcoating, just what the data says.",
+    title: "Get ML insights & chat with Fric",
+    desc: "Machine Learning analyzes your trading patterns with data-driven predictions. Chat with Fric the Frog, your personal AI trading coach.",
   },
 ];
 
@@ -244,7 +245,7 @@ function EmotionSpotlight() {
 // ── AI spotlight ──────────────────────────────────────────
 function AISpotlight() {
   return (
-    <section id="claude-ai" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8 border-b border-border bg-muted/30">
+    <section id="ml-ai" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8 border-b border-border bg-muted/30">
       <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start">
 
         {/* Preview card */}
@@ -252,37 +253,38 @@ function AISpotlight() {
           <div className="border border-border rounded-lg sm:rounded-xl overflow-hidden">
             <div className="bg-muted border-b border-border px-4 sm:px-5 py-2 sm:py-3 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
-              <span className="text-xs text-muted-foreground">Claude AI — analyzing your journal</span>
+              <span className="text-xs text-muted-foreground">Machine Learning — analyzing your patterns</span>
             </div>
             <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 text-xs sm:text-sm leading-relaxed">
               <p className="text-muted-foreground">
-                Looking at your last 6 trades, the pattern is obvious:{" "}
+                ML model trained on your trading history identifies:{" "}
                 <span className="font-semibold text-foreground">
-                  you know how to trade, but you don't trust yourself when it counts.
+                  you have strong entry timing but weak exit discipline.
                 </span>
               </p>
               <p className="text-muted-foreground">
-                Your disciplined trades returned an average of{" "}
-                <span className="text-primary font-semibold">+14.6%</span>. Your emotional
-                trades lost an average of{" "}
-                <span className="text-destructive font-semibold">-22.6%</span>. You're not bad
-                at picking entries — you're bad at managing your psychology at the exit.
+                Your disciplined trades show{" "}
+                <span className="text-primary font-semibold">+14.6%</span> average return with{" "}
+                <span className="text-primary font-semibold">78% win probability</span>. Emotional
+                trades average{" "}
+                <span className="text-destructive font-semibold">-22.6%</span> with only{" "}
+                <span className="text-destructive font-semibold">23% win probability</span>.
               </p>
               <div className="border-l-2 border-primary pl-4 py-1">
                 <p className="text-[10px] sm:text-[11px] uppercase tracking-widest mb-1.5 font-semibold text-muted-foreground">
-                  Recommendation
+                  🐸 Fric says
                 </p>
                 <p className="text-muted-foreground">
-                  Before every sell, write down the original reason you bought. If that reason is still
-                  valid, don't sell.{" "}
+                  Ribbit! Your data shows you're not bad at picking coins — you're struggling with
+                  psychology at the exit. Try setting exit rules before entering trades.{" "}
                   <span className="font-semibold text-foreground">The enemy is you, not the market.</span>
                 </p>
               </div>
             </div>
             <div className="border-t border-border px-4 sm:px-5 py-2 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-              <span className="text-[10px] sm:text-[11px] text-muted-foreground">Powered by Claude API · Anthropic</span>
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground">Powered by scikit-learn ML + Ollama LLM + CoinGecko API</span>
               <span className="text-[10px] sm:text-[11px] font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                Brutally honest
+                Real-time insights
               </span>
             </div>
           </div>
@@ -290,17 +292,23 @@ function AISpotlight() {
 
         {/* Copy */}
         <div className="flex-1 md:max-w-sm">
-          <p className="text-primary text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest mb-2 sm:mb-3">AI Feedback</p>
+          <p className="text-primary text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest mb-2 sm:mb-3">ML Analysis & Fric 🐸</p>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight mb-4 sm:mb-5 text-foreground">
-            A mirror,<br />not a cheerleader.
+            Machine Learning<br />meets your coach.
           </h2>
           <p className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 text-muted-foreground">
-            Claude reads your entire trade journal — every entry, every emotion tag, every win
-            and loss — and tells you exactly what your patterns say about you.
+            Our ML models analyze your entire trade history — every entry, emotion tag, win
+            and loss — to predict outcomes and identify patterns you can't see.
+          </p>
+          <p className="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 text-muted-foreground">
+            Chat with Fric the Frog, your personal AI trading coach powered by Ollama running
+            locally. Ask questions in English, Bisaya, or Tagalog. Fric uses live market data
+            from CoinGecko API to give you real-time insights on current prices, 24h changes,
+            and unrealized P&L on your open positions.
           </p>
           <p className="text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8 text-muted-foreground">
-            No encouragement. No vague tips. Just your data, interpreted honestly, with specific
-            recommendations based on your actual behaviour.
+            No cloud dependency. No data sent to third parties. Your trading data stays private
+            while you get professional-grade analysis with real-time market context.
           </p>
           <Button asChild size="lg" className="text-sm sm:text-base">
             <a href="/register">Get Your First Analysis</a>
