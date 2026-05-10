@@ -157,7 +157,16 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // ── clearSession (logout / expired refresh token)
-      clearSession: () =>
+      clearSession: () => {
+        // Clear trading chat messages on logout
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("coinfession-trading-chat");
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+        
         set({
           user:            null,
           accessToken:     null,
@@ -165,7 +174,8 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           isLoading:       false,
           isRefreshing:    false,
-        }),
+        });
+      },
     }),
 
     {
