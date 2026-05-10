@@ -62,32 +62,3 @@ export async function deleteAIFeedback(id: number): Promise<void> {
     token: getAccessToken(),
   });
 }
-
-// ─── ML Test Endpoints ────────────────────────────────────────────────────────
-
-export interface MLStatus {
-  ml_available: boolean;
-  total_trades: number;
-  closed_trades: number;
-  min_trades_required: number;
-  can_train_ml: boolean;
-  message: string;
-}
-
-export async function fetchMLStatus(): Promise<MLStatus> {
-  return apiFetch<MLStatus>("/api/ai-feedback/ml-status/", {
-    method: "GET",
-    token: getAccessToken(),
-  });
-}
-
-export async function generateAIFeedbackMLTest(
-  payload?: GeneratePayload
-): Promise<AIFeedbackRecord> {
-  return apiFetch<AIFeedbackRecord>("/api/ai-feedback/generate-ml-test/", {
-    method: "POST",
-    token: getAccessToken(),
-    body: JSON.stringify(payload ?? {}),
-  });
-}
-
