@@ -85,7 +85,7 @@ export const useEmotionJournalStore = create<EmotionJournalState>((set, get) => 
   setSelectedYear: async (year: number, token?: string) => {
     const { loadJournal } = get();
     if (!token) {
-      console.error("No token provided to setSelectedYear");
+      // No token available - skip loading
       return;
     }
     set({ selectedYear: year });

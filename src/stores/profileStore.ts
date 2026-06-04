@@ -1,13 +1,8 @@
 /**
  * stores/profileStore.ts
  * 
- * Zustand store for user profile state.
+ * Zustand store for user profile state using HttpOnly Cookie auth.
  * Manages fetching, caching, and updating user profile data.
- * 
- * Usage:
- *   const profile = useProfileStore((state) => state.profile);
- *   const isLoading = useProfileStore((state) => state.isLoading);
- *   await useProfileStore.getState().fetchProfile(accessToken);
  */
 
 import { create } from "zustand";
@@ -24,28 +19,9 @@ interface ProfileState {
   error: string | null;
   
   // ── Actions
-  /**
-   * Fetch the user profile from the backend.
-   * Sets isLoading to true during the request.
-   * Clears any previous errors on success.
-   */
   fetchProfile: (accessToken: string) => Promise<void>;
-  
-  /**
-   * Update the user profile on the backend.
-   * Sets isUpdating to true during the request.
-   * Updates the local profile state on success.
-   */
   updateProfile: (accessToken: string, updates: UserProfileUpdatePayload) => Promise<void>;
-  
-  /**
-   * Clear the profile state (e.g., on logout).
-   */
   clearProfile: () => void;
-  
-  /**
-   * Set error message manually.
-   */
   setError: (error: string | null) => void;
 }
 

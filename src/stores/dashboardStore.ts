@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────
 // stores/dashboardStore.ts
 //
-// Zustand store for Dashboard data.
+// Zustand store for Dashboard data using HttpOnly Cookie auth.
 // Manages loading, refreshing, and error states.
 // ─────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ interface DashboardState {
   refreshDashboard: (token: string) => Promise<void>;
 }
 
-export const useDashboardStore = create<DashboardState>()((set, get) => ({
+export const useDashboardStore = create<DashboardState>()((set) => ({
   // ── Initial state
   data: null,
   loading: false,
