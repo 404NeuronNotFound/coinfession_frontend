@@ -87,8 +87,11 @@ export default function LoginPage() {
     clearSession();
 
     try {
+      // Get tokens from login
       const tokens = await login(form);
+      // Fetch user data with access token
       const user = await getMe(tokens.access);
+      // Store session with tokens and user
       setSession(tokens, user);
     } catch (err: unknown) {
       const apiErr = err as ApiError;

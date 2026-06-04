@@ -2,7 +2,7 @@
  * api/profile.ts
  * 
  * API calls for user profile management.
- * All endpoints require authentication (Bearer token).
+ * Uses HttpOnly cookies for authentication.
  * 
  * Endpoints:
  *   GET  /api/user/profile/  → fetch user profile
@@ -20,10 +20,7 @@ import { UserProfile, UserProfileUpdatePayload } from "@/types/profile";
  * @throws ApiError if request fails or user is not authenticated
  */
 export async function fetchUserProfile(accessToken: string): Promise<UserProfile> {
-  return apiFetch<UserProfile>("/api/user/profile/", {
-    method: "GET",
-    token: accessToken,
-  });
+  return apiFetch<UserProfile>("/api/user/profile/", { token: accessToken });
 }
 
 /**
