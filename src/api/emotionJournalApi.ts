@@ -2,6 +2,23 @@ import { apiFetch } from "@/api/client";
 import { EmotionJournalResponse, EmotionJournalFilters } from "@/types/emotionJournalTypes";
 
 /**
+ * Get access token from localStorage (Zustand persisted store)
+ */
+function getAccessToken(): string {
+  if (typeof window === "undefined") return "";
+  
+  try {
+    const stored = localStorage.getItem("coinfession-auth");
+    if (!stored) return "";
+    
+    const parsed = JSON.parse(stored);
+    return parsed?.state?.accessToken || "";
+  } catch {
+    return "";
+  }
+}
+
+/**
  * Fetch emotion journal data from the backend.
  * GET /api/emotion-journal/?emotion_id=<id>&weeks=52&year=2026
  */
@@ -9,6 +26,8 @@ export async function fetchEmotionJournal(
   token: string,
   filters?: EmotionJournalFilters
 ): Promise<EmotionJournalResponse> {
+  // Use provided token or fall back to localStorage
+  const authToken = token || getAccessToken();
   const params = new URLSearchParams();
   
   if (filters?.emotion_id) {
@@ -25,5 +44,5 @@ export async function fetchEmotionJournal(
   const query = params.toString();
   const path = `/api/emotion-journal/${query ? "?" + query : ""}`;
 
-  return apiFetch<EmotionJournalResponse>(path, { token });
+  return apiFetch<EmotionJournalResponse>(path, { token: authToken });
 }
