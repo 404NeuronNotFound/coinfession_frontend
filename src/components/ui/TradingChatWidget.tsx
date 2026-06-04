@@ -9,7 +9,7 @@ import { checkOllamaStatus, sendChatMessage, type ChatMessage } from "@/api/trad
 
 export default function TradingChatWidget() {
   const theme = useThemeStore((state) => state.theme);
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, username } = useAuthStore();
   const d = theme === "dark";
   
   // Use persisted store for messages and open state
@@ -49,10 +49,10 @@ export default function TradingChatWidget() {
         
         // Add personalized greeting message if Ollama is available and no messages
         if (status.running && messages.length === 0) {
-          const username = user?.username || "there";
+          const displayName = username || user?.username || "there";
           setMessages([{
             role: "assistant",
-            content: `Ribbit! 🐸 Hi ${username}! I'm Fric, your trading coach. How can I help you in your trading journey today?`
+            content: `Ribbit! 🐸 Hi ${displayName}! I'm Fric, your trading coach. How can I help you in your trading journey today?`
           }], currentUserId);
         }
       } catch (error) {
@@ -138,7 +138,7 @@ export default function TradingChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 text-2xl cursor-pointer ${
+          className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 text-xl sm:text-2xl cursor-pointer ${
             d
               ? "bg-gradient-to-br from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
               : "bg-gradient-to-br from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400"
@@ -153,40 +153,40 @@ export default function TradingChatWidget() {
       {/* Chat Modal */}
       {isOpen && (
         <div
-          className={`fixed bottom-6 right-6 z-50 w-96 h-[32rem] rounded-lg shadow-2xl flex flex-col ${
+          className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] max-w-[20rem] sm:max-w-sm md:w-96 h-[70vh] max-h-[32rem] sm:h-[32rem] rounded-lg shadow-2xl flex flex-col ${
             d ? "bg-background border border-border" : "bg-white border border-slate-200"
           }`}
         >
           {/* Header */}
-          <div className={`flex items-center justify-between p-4 border-b ${d ? "border-border bg-gradient-to-r from-green-600/10 to-emerald-600/10" : "border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50"}`}>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🐸</span>
-              <div>
-                <h3 className="font-semibold text-foreground">Fric</h3>
+          <div className={`flex items-center justify-between p-3 sm:p-4 border-b ${d ? "border-border bg-gradient-to-r from-green-600/10 to-emerald-600/10" : "border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50"}`}>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="text-xl sm:text-2xl flex-shrink-0">🐸</span>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">Fric</h3>
                 <p className="text-xs text-muted-foreground">Your Trading Coach</p>
               </div>
-              <div className={`ml-2 w-2 h-2 rounded-full ${isOllamaAvailable ? "bg-green-500" : "bg-red-500"}`} />
+              <div className={`ml-2 w-2 h-2 rounded-full flex-shrink-0 ${isOllamaAvailable ? "bg-green-500" : "bg-red-500"}`} />
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer flex-shrink-0 ml-2"
               aria-label="Close chat"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
             {isCheckingStatus ? (
               <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-muted-foreground" />
               </div>
             ) : !isOllamaAvailable ? (
               <div className={`flex flex-col items-center justify-center h-full text-center p-4 ${d ? "text-muted-foreground" : "text-slate-600"}`}>
-                <AlertCircle className="w-12 h-12 mb-4" />
-                <p className="font-semibold mb-2">Ollama Not Available</p>
-                <p className="text-sm">
+                <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4" />
+                <p className="font-semibold mb-2 text-sm sm:text-base">Ollama Not Available</p>
+                <p className="text-xs sm:text-sm">
                   Please install and run Ollama to chat with Fric.
                 </p>
               </div>
@@ -195,31 +195,42 @@ export default function TradingChatWidget() {
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex items-start gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"} mb-3 sm:mb-4`}
                   >
                     {msg.role === "assistant" && (
-                      <span className="text-xl mr-2 flex-shrink-0">🐸</span>
+                      <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                        <span className="text-sm sm:text-lg">🐸</span>
+                      </div>
                     )}
                     <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                      className={`max-w-[75%] sm:max-w-[80%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
                         msg.role === "user"
                           ? d
-                            ? "bg-green-600 text-white"
-                            : "bg-green-500 text-white"
+                            ? "bg-green-600 text-white ml-auto"
+                            : "bg-green-500 text-white ml-auto"
                           : d
                           ? "bg-muted text-foreground"
                           : "bg-slate-100 text-slate-900"
-                      }`}
+                      } ${msg.role === "user" ? "rounded-br-sm" : "rounded-bl-sm"}`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <p className="text-xs sm:text-sm leading-relaxed break-words whitespace-pre-wrap">{msg.content}</p>
                     </div>
+                    {msg.role === "user" && (
+                      <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                        <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full ${d ? "bg-green-600" : "bg-green-500"} flex items-center justify-center text-white text-xs font-semibold`}>
+                          {(username || user?.username)?.[0]?.toUpperCase() || "U"}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isSending && (
-                  <div className="flex justify-start">
-                    <span className="text-xl mr-2">🐸</span>
-                    <div className={`rounded-lg px-4 py-2 ${d ? "bg-muted" : "bg-slate-100"}`}>
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  <div className="flex items-start gap-2 justify-start mb-3 sm:mb-4">
+                    <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+                      <span className="text-sm sm:text-lg">🐸</span>
+                    </div>
+                    <div className={`rounded-xl px-3 py-2 sm:px-4 sm:py-3 rounded-bl-sm ${d ? "bg-muted" : "bg-slate-100"}`}>
+                      <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin text-muted-foreground" />
                     </div>
                   </div>
                 )}
@@ -230,45 +241,51 @@ export default function TradingChatWidget() {
 
           {/* Input */}
           {isOllamaAvailable && (
-            <div className={`p-4 border-t ${d ? "border-border" : "border-slate-200"}`}>
+            <div className={`p-3 sm:p-4 border-t ${d ? "border-border" : "border-slate-200"}`}>
               <div className="flex gap-2 items-end">
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask Fric about your trades..."
-                  disabled={isSending}
-                  rows={1}
-                  className={`flex-1 px-3 py-2 rounded-lg text-sm transition-colors resize-none overflow-hidden ${
-                    d
-                      ? "bg-muted border-border text-foreground placeholder:text-muted-foreground"
-                      : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
-                  } border focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  style={{
-                    minHeight: '40px',
-                    maxHeight: '120px',
-                    height: 'auto'
-                  }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = Math.min(target.scrollHeight, 120) + 'px';
-                  }}
-                />
+                <div className="flex-1">
+                  <textarea
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask Fric about your trades..."
+                    disabled={isSending}
+                    rows={1}
+                    className={`w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm transition-colors resize-none overflow-hidden ${
+                      d
+                        ? "bg-muted border-border text-foreground placeholder:text-muted-foreground"
+                        : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                    } border focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500`}
+                    style={{
+                      minHeight: '36px',
+                      maxHeight: '108px',
+                      height: 'auto'
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = Math.min(target.scrollHeight, 108) + 'px';
+                    }}
+                  />
+                </div>
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isSending}
-                  className={`px-4 py-2 rounded-lg transition-colors flex-shrink-0 ${
+                  className={`px-3 py-2 sm:px-4 sm:py-3 rounded-lg transition-all duration-200 flex-shrink-0 ${
                     !inputValue.trim() || isSending
-                      ? "bg-slate-300 cursor-not-allowed"
+                      ? "bg-slate-300 cursor-not-allowed opacity-50"
                       : d
-                      ? "bg-green-600 hover:bg-green-500 text-white cursor-pointer"
-                      : "bg-green-500 hover:bg-green-400 text-white cursor-pointer"
+                      ? "bg-green-600 hover:bg-green-500 text-white cursor-pointer hover:scale-105"
+                      : "bg-green-500 hover:bg-green-400 text-white cursor-pointer hover:scale-105"
                   }`}
                   aria-label="Send message"
-                  style={{ height: '40px' }}
+                  style={{ minHeight: '36px' }}
                 >
-                  <Send className="w-4 h-4" />
+                  {isSending ? (
+                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+                  )}
                 </button>
               </div>
             </div>
