@@ -75,7 +75,7 @@ export default function Footer() {
               <InstagramIcon size={17} />
             </a>
             <a
-              href="https://www.tiktok.com/@keybcuts.codes"
+              href="https://www.tiktok.com/@keybeen.creatives"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="TikTok"
