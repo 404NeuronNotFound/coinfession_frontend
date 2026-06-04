@@ -10,8 +10,8 @@ export default function SpotTradesPage() {
         {/* Spot Trades Content */}
         <section>
           <TradeLog
-            onLogTrade={() => console.log("Log trade")}
-            onExport={() => console.log("Export CSV")}
+            onLogTrade={() => {}}
+            onExport={() => {}}
           />
         </section>
       </div>
